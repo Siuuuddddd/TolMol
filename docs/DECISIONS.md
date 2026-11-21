@@ -20,3 +20,4 @@
 - Either participant can cancel an unresolved weight dispute. Cancellation creates one new open lot with the inspected weight, original category, pickup point and starting rate, and a fresh 24-hour deadline. Old chats become read-only, bid history remains intact and the buyer–seller cooldown carries over. Deal events use the marketplace outbox and reach only its participants.
 - Personal history uses principal-scoped UUID keyset pagination. Inventory uses the public listing DTO and excludes pickup coordinates.
 - Subscription authorization, snapshot, registration and acknowledgment are serialized per socket against transient delivery. Watchlist alerts are independent. Sessions close at JWT expiration.
+- Existing inbox rows are migrated as delivered. New rows start pending and are completed after socket or push dispatch. A crash after dispatch can repeat delivery without duplicating the inbox row.

@@ -8,7 +8,8 @@ import org.springframework.stereotype.Service
 import java.util.UUID
 
 interface AlertStore {
-    fun insert(user: UUID,alert: Alert): Boolean
+    fun pending(user: UUID,alert: Alert): Boolean
+    fun delivered(user: UUID,eventId: UUID)
     fun inbox(user: UUID): List<Alert>
 }
 interface NotificationGateway {
@@ -25,7 +26,10 @@ class NotificationService(private val store: AlertStore,private val gateway: Not
         val alert = Alert(event.id,event.type,event.aggregate,event.data)
         for (user in event.audience) {
             val inboxAlert = if (event.type=="chat.message") alert.copy(data=alert.data-"body") else alert
-            if (store.insert(user,inboxAlert) && !gateway.send(user,alert)) push.send(user,inboxAlert)
+            if (store.pending(user,inboxAlert)) {
+                if (!gateway.send(user,alert)) push.send(user,inboxAlert)
+                store.delivered(user,event.id)
+            }
         }
         if (event.type in setOf("BID_PLACED","LEADER_CHANGED","STATUS_CHANGED","AUCTION_AWARDED","AUCTION_EXPIRED")) {
             gateway.broadcast(event.aggregate,event.audience,{ user ->
