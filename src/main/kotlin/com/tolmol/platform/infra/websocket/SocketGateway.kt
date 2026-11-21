@@ -21,10 +21,12 @@ class SocketGateway(private val json: ObjectMapper,commands: List<SocketCommand>
     private val handlers = commands.associateBy { it.type }
     private val sessions = ConcurrentHashMap<String,WebSocketSession>()
     private val subscriptions = ConcurrentHashMap<String,MutableSet<UUID>>()
-    fun broadcast(listing: UUID,excluded: Set<UUID>,allowed: (UUID)->Boolean,payload: Any) {
+    private val nearby = ConcurrentHashMap.newKeySet<String>()
+    fun broadcast(listing: UUID?,excluded: Set<UUID>,allowed: (UUID)->Boolean,payload: Any) {
         for (socket in sessions.values) synchronized(socket) {
             val user = UUID.fromString(socket.principal!!.name)
-            if (user !in excluded && subscriptions[socket.id]?.contains(listing)==true && allowed(user)) send(socket,payload)
+            val subscribed = if (listing==null) socket.id in nearby else subscriptions[socket.id]?.contains(listing)==true
+            if (user !in excluded && subscribed && allowed(user)) send(socket,payload)
         }
     }
     private fun send(socket: WebSocketSession,payload: Any): Boolean {
@@ -37,13 +39,17 @@ class SocketGateway(private val json: ObjectMapper,commands: List<SocketCommand>
         expiryTasks[session.id] = timer.schedule({ session.close(CloseStatus.POLICY_VIOLATION) },delay,java.util.concurrent.TimeUnit.MILLISECONDS)
         sessions[session.id] = ConcurrentWebSocketSessionDecorator(session,5000,65536)
     }
-    override fun afterConnectionClosed(session: WebSocketSession,status: CloseStatus) { sessions.remove(session.id); subscriptions.remove(session.id); expiryTasks.remove(session.id)?.cancel(false) }
+    override fun afterConnectionClosed(session: WebSocketSession,status: CloseStatus) { nearby.remove(session.id); sessions.remove(session.id); subscriptions.remove(session.id); expiryTasks.remove(session.id)?.cancel(false) }
     override fun handleTextMessage(session: WebSocketSession,message: TextMessage) {
         val socket = sessions[session.id] ?: return
         synchronized(socket) {
         if (!expires(socket).isAfter(java.time.Instant.now())) { socket.close(CloseStatus.POLICY_VIOLATION); return }
         val response = try {
             val body = json.readTree(message.payload)
+            if (body.path("type").asText()=="nearby.unsubscribe") {
+                nearby.remove(session.id)
+                send(socket,mapOf("type" to "ack","data" to "unsubscribed")); return
+            }
             if (body.path("type").asText()=="auction.unsubscribe") {
                 subscriptions[session.id]?.remove(UUID.fromString(body.path("listingId").asText()))
                 send(socket,mapOf("type" to "ack","data" to "unsubscribed"))
@@ -51,6 +57,7 @@ class SocketGateway(private val json: ObjectMapper,commands: List<SocketCommand>
             }
             val command = requireNotNull(handlers[body.path("type").asText()]) { "Unknown command" }
             val result = command.handle(UUID.fromString(session.principal!!.name),body)
+            if (command.type=="nearby.subscribe") nearby.add(session.id)
             if (command.type=="auction.subscribe") subscriptions.computeIfAbsent(session.id) { ConcurrentHashMap.newKeySet() }
                 .add(UUID.fromString(body.path("listingId").asText()))
             mapOf("type" to "ack","data" to result)

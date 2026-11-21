@@ -17,7 +17,7 @@ class DeliveryReplayTest : MarketFixture() {
         var sent = 0
         val gateway = object : NotificationGateway {
             override fun send(user: UUID,alert: Alert): Boolean { sent++; return true }
-            override fun broadcast(listing: UUID,excluded: Set<UUID>,allowed: (UUID)->Boolean,alert: Alert) {}
+            override fun broadcast(listing: UUID?,excluded: Set<UUID>,allowed: (UUID)->Boolean,alert: Alert) {}
         }
         val push = object : PushProvider { override fun send(user: UUID,alert: Alert) = error("Unexpected push") }
         val service = NotificationService(store,gateway,push,market)

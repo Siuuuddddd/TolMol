@@ -21,3 +21,4 @@
 - Personal history uses principal-scoped UUID keyset pagination. Inventory uses the public listing DTO and excludes pickup coordinates.
 - Subscription authorization, snapshot, registration and acknowledgment are serialized per socket against transient delivery. Watchlist alerts are independent. Sessions close at JWT expiration.
 - Existing inbox rows are migrated as delivered. New rows start pending and are completed after socket or push dispatch. A crash after dispatch can repeat delivery without duplicating the inbox row.
+- Database triggers cover publication, corrected-weight relisting, award and expiry in the same outbox transaction. Discovery events are transient, location-checked per delivery and exclude coordinates.
