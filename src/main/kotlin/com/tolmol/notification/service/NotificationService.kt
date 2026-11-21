@@ -13,7 +13,7 @@ interface AlertStore {
 }
 interface NotificationGateway {
     fun send(user: UUID,alert: Alert): Boolean
-    fun viewers(listing: UUID): Set<UUID>
+    fun broadcast(listing: UUID,excluded: Set<UUID>,allowed: (UUID)->Boolean,alert: Alert)
 }
 interface PushProvider { fun send(user: UUID,alert: Alert) }
 
@@ -28,10 +28,9 @@ class NotificationService(private val store: AlertStore,private val gateway: Not
             if (store.insert(user,inboxAlert) && !gateway.send(user,alert)) push.send(user,inboxAlert)
         }
         if (event.type in setOf("BID_PLACED","LEADER_CHANGED","STATUS_CHANGED","AUCTION_AWARDED","AUCTION_EXPIRED")) {
-            for (user in gateway.viewers(event.aggregate) - event.audience) {
-                try { market.eligible(user,event.aggregate) } catch (_: BusinessException) { continue }
-                gateway.send(user,alert)
-            }
+            gateway.broadcast(event.aggregate,event.audience,{ user ->
+                try { market.eligible(user,event.aggregate); true } catch (_: BusinessException) { false }
+            },alert)
         }
     }
 }

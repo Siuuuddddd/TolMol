@@ -7,6 +7,6 @@ import org.springframework.stereotype.Component
 import java.util.UUID
 @Component
 class AlertGateway(private val sockets: SocketGateway) : NotificationGateway {
-    override fun viewers(listing: UUID) = sockets.viewers(listing)
+    override fun broadcast(listing: UUID,excluded: Set<UUID>,allowed: (UUID)->Boolean,alert: Alert) = sockets.broadcast(listing,excluded,allowed,alert)
     override fun send(user: UUID,alert: Alert) = sockets.deliver(user,alert)
 }
