@@ -39,7 +39,7 @@ class BidRepository(dbs: Databases,private val events: EventOutbox,private val c
     override fun change(auction: Auction,status: String,event: String,bid: Bid?) {
         val id = auction.listing
         sql.sql("update listings set status=?,version=version+1 where id=?").params(status,id).update()
-        if (status=="AWARDED") sql.sql("update listings set winning_bid=? where id=?").params(requireNotNull(bid).id,id).update()
+
         val recipients = sql.sql("select buyer from watchers where listing=? union select buyer from bids where listing=?")
             .params(id,id).query(UUID::class.java).set() + auction.seller
         val leader = leading(id)
@@ -58,6 +58,11 @@ class BidRepository(dbs: Databases,private val events: EventOutbox,private val c
             val former = sql.sql("select buyer from bids where listing=? and id<>? order by rate desc limit 1")
                 .params(id,bid.id).query(UUID::class.java).optional().orElse(null)
             if (former!=null && former!=bid.buyer) events.append(db,"OUTBID",id,setOf(former),fields)
+        }
+        if (status=="AWARDED") sql.sql("update listings set winning_bid=? where id=?").params(requireNotNull(bid).id,id).update()
+        val updated = auction.copy(status=status,version=auction.version+1)
+        com.tolmol.platform.infra.config.afterCommit {
+            cache.read(updated) { Snapshot(id,leader?.rate,leader?.id,status,updated.version) }
         }
     }
     override fun winningBuyer(id: UUID) = sql.sql("select buyer from bids join listings on winning_bid=bids.id where listings.id=?")

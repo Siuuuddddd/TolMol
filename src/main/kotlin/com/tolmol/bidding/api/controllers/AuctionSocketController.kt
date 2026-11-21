@@ -1,7 +1,7 @@
 package com.tolmol.bidding.api.controllers
 
 import com.tolmol.bidding.service.BiddingService
-import com.tolmol.platform.infra.websocket.SocketCommand
+import com.tolmol.platform.service.SocketCommand
 import com.fasterxml.jackson.databind.JsonNode
 import org.springframework.stereotype.Component
 import java.util.UUID

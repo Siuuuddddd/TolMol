@@ -1,7 +1,7 @@
 package com.tolmol.chat.api.controllers
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.tolmol.platform.infra.websocket.SocketCommand
+import com.tolmol.platform.service.SocketCommand
 import com.tolmol.chat.service.ChatService
 import com.tolmol.chat.api.dto.SendMessageRequest
 import com.tolmol.chat.api.mappers.toDto

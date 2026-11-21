@@ -1,6 +1,6 @@
 # TolMol backend product requirements
 
-**Status** — Working draft. Confirmed product rules below guide the build. The final section records decisions still needed.
+**Status** — Backend MVP baseline. Product rules are recorded here and implementation decisions are recorded in [DECISIONS.md](DECISIONS.md).
 
 ## Purpose and scope
 
@@ -43,9 +43,9 @@ Kotlin and Spring Boot power one deployable modular monolith with Discovery, Use
 6. A buyer bids on paper from seller A at 10:00 and can bid on metal from seller B at 10:05. The buyer can bid again on an open lot from seller A starting at 16:00.
 7. The seller accepts ₹12/kg for an estimated 20 kg. At pickup the buyer confirms 20 kg and pays ₹240, completing the deal.
 
-## Decisions to settle
+## MVP operating rules
 
 - **Bid validity** — The first bid must meet the starting rate. Every subsequent bid must exceed the current highest rate. Rejected bids do not start or extend the cooldown.
-- **Location** — Define how recent a location must be, which seller location anchors a published lot, and what a watcher who moves outside the radius may learn from alerts.
+- **Location** — Require a location updated within 15 minutes for discovery and bidding. Capture the pickup coordinates when publishing. Watchers continue to receive auction changes after moving, with exact pickup coordinates restricted to deal participants.
 - **Weight dispute** — After award the deal is PENDING_PICKUP. A mismatch enters WEIGHT_DISPUTE. Agreement on a revised amount completes the deal. Failed negotiation cancels it and relists the lot with corrected weight. Emit an event for each transition.
-- **Notification audience** — Specify whether all previous bidders or only affected bidders receive each bid alert. Confirm which events trigger background push for watchers, including reminders.
+- **Notification audience** — Auction changes reach the seller, bidders and watchers. Outbid, win, loss, chat and pickup alerts reach their affected recipients. Offline alerts use the push stub. Scheduled advance reminders are outside this MVP.

@@ -9,10 +9,7 @@ import org.springframework.web.socket.handler.*
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
-interface SocketCommand {
-    val type: String
-    fun handle(user: UUID,body: JsonNode): Any
-}
+import com.tolmol.platform.service.SocketCommand
 
 @Component
 class SocketGateway(private val json: ObjectMapper,commands: List<SocketCommand>) : TextWebSocketHandler() {

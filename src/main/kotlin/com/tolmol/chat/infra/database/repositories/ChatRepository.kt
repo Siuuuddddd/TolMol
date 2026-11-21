@@ -32,6 +32,7 @@ class ChatRepository(dbs: Databases,private val cache: ChatHistoryCache,private 
         val recipient = if (sender==thread.seller) thread.buyer else thread.seller
         events.append(db,"chat.message",thread.id,setOf(recipient),mapOf("listing" to thread.listing.toString(),
             "sender" to sender.toString(),"messageId" to message.id.toString(),"body" to body))
+        com.tolmol.platform.infra.config.afterCommit { history(thread.id,null) }
         message
     }!!
     override fun history(id: UUID,after: Long?): List<Message> {

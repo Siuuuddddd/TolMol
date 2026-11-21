@@ -16,6 +16,17 @@ abstract class AuctionFixture : MarketFixture() {
 class BiddingTest : AuctionFixture() {
     @Autowired lateinit var db: Databases
     @Autowired lateinit var relay: EventOutbox
+    @Test fun deadlineAwardsHighestAndExpiresEmptyLot() {
+        val seller = user(Role.SELLER)
+        val open = lot(seller).id
+        val empty = lot(seller).id
+        bid(user(Role.BUYER),open,12)
+        val highest = bid(user(Role.BUYER),open,17)
+        db.marketplace.sql.sql("update listings set deadline=now()-interval '1 second' where id in (?,?)").params(open,empty).update()
+        bidding.expire()
+        assertEquals(highest.buyer,bidding.winningBuyer(open))
+        assertEquals("EXPIRED",bidding.snapshot(seller,empty).status)
+    }
     @Test fun ascendingOffersCooldownAwardAndPublication() {
         val seller = user(Role.SELLER)
         val id = lot(seller).id
@@ -25,6 +36,8 @@ class BiddingTest : AuctionFixture() {
         assertEquals(first.id,bidding.place(buyer,id,12.toBigDecimal(),key).id)
         assertThrows(CooldownException::class.java) { bid(buyer,lot(seller).id,14) }
         bid(buyer,lot(user(Role.SELLER)).id,12)
+        db.marketplace.sql.sql("update bids set created_at=now()-interval '6 hours' where id=?").param(first.id).update()
+        bid(buyer,lot(seller).id,12)
         val other = user(Role.BUYER)
         assertThrows(InvalidBidException::class.java) { bid(other,id,12) }
         bid(other,id,15)
