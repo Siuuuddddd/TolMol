@@ -8,6 +8,7 @@ import org.testcontainers.containers.PostgreSQLContainer
 @SpringBootTest
 abstract class BackendTest {
     companion object {
+        private val redis = org.testcontainers.containers.GenericContainer("redis:7").apply { withExposedPorts(6379); start() }
         private val pg = PostgreSQLContainer("postgres:17-alpine").apply {
             withDatabaseName("marketplace")
             start()
@@ -17,6 +18,7 @@ abstract class BackendTest {
         }
         @JvmStatic @DynamicPropertySource
         fun database(registry: DynamicPropertyRegistry) {
+            registry.add("spring.data.redis.port") { redis.firstMappedPort }
             registry.add("tolmol.db.base") { "jdbc:postgresql://${pg.host}:${pg.firstMappedPort}/" }
             registry.add("tolmol.db.user") { pg.username }
             registry.add("tolmol.db.password") { pg.password }

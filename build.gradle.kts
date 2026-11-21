@@ -9,6 +9,7 @@ version = "0.1.0"
 repositories { mavenCentral() }
 kotlin { jvmToolchain(21) }
 dependencies {
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
     implementation("org.flywaydb:flyway-core")
