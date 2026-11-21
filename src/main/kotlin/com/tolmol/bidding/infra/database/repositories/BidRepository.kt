@@ -49,6 +49,16 @@ class BidRepository(dbs: Databases,private val events: EventOutbox,private val c
         events.append(db,event,id,recipients,fields)
         if (event=="BID_PLACED") events.append(db,"LEADER_CHANGED",id,recipients,fields)
         else events.append(db,"STATUS_CHANGED",id,recipients,fields)
+        if (event=="AUCTION_AWARDED" && bid!=null) {
+            val bidders = bids(id).map { it.buyer }.toSet()
+            events.append(db,"BID_WON",id,setOf(bid.buyer),fields)
+            if ((bidders-bid.buyer).isNotEmpty()) events.append(db,"BID_LOST",id,bidders-bid.buyer,fields)
+        }
+        if (event=="BID_PLACED" && bid!=null) {
+            val former = sql.sql("select buyer from bids where listing=? and id<>? order by rate desc limit 1")
+                .params(id,bid.id).query(UUID::class.java).optional().orElse(null)
+            if (former!=null && former!=bid.buyer) events.append(db,"OUTBID",id,setOf(former),fields)
+        }
     }
     override fun winningBuyer(id: UUID) = sql.sql("select buyer from bids join listings on winning_bid=bids.id where listings.id=?")
         .param(id).query(UUID::class.java).optional().orElse(null)

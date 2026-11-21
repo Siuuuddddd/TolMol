@@ -33,6 +33,6 @@ class BiddingTest : AuctionFixture() {
         assertEquals("AWARDED",bidding.snapshot(seller,id).status)
         assertThrows(AuctionClosedException::class.java) { bid(other,id,16) }
         relay.publishMarketplace()
-        assertEquals(6L,db.marketplace.sql.sql("select count(*) from outbox where aggregate_id=? and published").param(id).query(Long::class.java).single())
+        assertEquals(6L,db.marketplace.sql.sql("select count(*) from outbox where aggregate_id=? and published and event_type in ('BID_PLACED','LEADER_CHANGED','AUCTION_AWARDED','STATUS_CHANGED')").param(id).query(Long::class.java).single())
     }
 }

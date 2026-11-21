@@ -18,16 +18,22 @@ interface SocketCommand {
 class SocketGateway(private val json: ObjectMapper,commands: List<SocketCommand>) : TextWebSocketHandler() {
     private val handlers = commands.associateBy { it.type }
     private val sessions = ConcurrentHashMap<String,WebSocketSession>()
+    private val subscriptions = ConcurrentHashMap<String,MutableSet<UUID>>()
+    fun viewers(listing: UUID): Set<UUID> = subscriptions.entries.filter { listing in it.value }
+        .mapNotNull { sessions[it.key]?.principal?.name?.let(UUID::fromString) }.toSet()
     override fun afterConnectionEstablished(session: WebSocketSession) {
         requireNotNull(session.principal)
         sessions[session.id] = ConcurrentWebSocketSessionDecorator(session,5000,65536)
     }
-    override fun afterConnectionClosed(session: WebSocketSession,status: CloseStatus) { sessions.remove(session.id) }
+    override fun afterConnectionClosed(session: WebSocketSession,status: CloseStatus) { sessions.remove(session.id); subscriptions.remove(session.id) }
     override fun handleTextMessage(session: WebSocketSession,message: TextMessage) {
         val response = try {
             val body = json.readTree(message.payload)
             val command = requireNotNull(handlers[body.path("type").asText()]) { "Unknown command" }
-            mapOf("type" to "ack","data" to command.handle(UUID.fromString(session.principal!!.name),body))
+            val result = command.handle(UUID.fromString(session.principal!!.name),body)
+            if (command.type=="auction.subscribe") subscriptions.computeIfAbsent(session.id) { ConcurrentHashMap.newKeySet() }
+                .add(UUID.fromString(body.path("listingId").asText()))
+            mapOf("type" to "ack","data" to result)
         } catch (e: BusinessException) {
             mapOf("type" to "error","status" to e.status,"message" to e.message)
         } catch (e: IllegalArgumentException) {
