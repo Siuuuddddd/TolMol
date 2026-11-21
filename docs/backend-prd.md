@@ -45,8 +45,7 @@ Kotlin and Spring Boot power one deployable modular monolith with Discovery, Use
 
 ## Decisions to settle
 
-- **Cooldown** — The draft measures six hours from a successfully recorded bid. Confirm whether a rejected attempt affects the timer.
-- **Bid validity** — The handoff used a minimum increment. Can a new bid come in below the current leader to offer better collection terms? Decide how buyers attach terms to a bid and how equal highest bids are resolved at expiry.
+- **Bid validity** — The first bid must meet the starting rate. Every subsequent bid must exceed the current highest rate. Rejected bids do not start or extend the cooldown.
 - **Location** — Define how recent a location must be, which seller location anchors a published lot, and what a watcher who moves outside the radius may learn from alerts.
-- **Award and sale** — If the inspected weight differs, can the parties settle for the actual weight, renegotiate or cancel? Decide who records payment and completion and when the winner receives exact pickup details.
+- **Weight dispute** — After award the deal is PENDING_PICKUP. A mismatch enters WEIGHT_DISPUTE. Agreement on a revised amount completes the deal. Failed negotiation cancels it and relists the lot with corrected weight. Emit an event for each transition.
 - **Notification audience** — Specify whether all previous bidders or only affected bidders receive each bid alert. Confirm which events trigger background push for watchers, including reminders.
