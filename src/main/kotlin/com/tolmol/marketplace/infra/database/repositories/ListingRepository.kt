@@ -14,6 +14,9 @@ import java.sql.Timestamp
 @Repository
 class ListingRepository(db: Databases,private val index: ListingGeoIndex) : ListingStore {
     private val sql = db.marketplace.sql
+    override fun mine(user: UUID,after: UUID?,limit: Int): List<Listing> = sql.sql("""select * from listings where seller=?
+        and (cast(? as uuid) is null or id>?) order by id limit ?""").params(listOf(user,after,after,limit))
+        .query(ListingEntity::class.java).list().map { it.toDomain() }
     override fun insert(listing: Listing) {
         with(listing) { sql.sql("""insert into listings(id,seller,category,weight,starting_rate,latitude,longitude,deadline)
             values(?,?,?,?,?,?,?,?)""").params(id,seller,category,weight,startingRate,latitude,longitude,Timestamp.from(deadline)).update() }

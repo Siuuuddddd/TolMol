@@ -47,6 +47,10 @@ class BiddingService(private val store: BidStore,private val market: Marketplace
             }
         }
     }
+    fun mine(user: UUID,after: UUID?,limit: Int): List<Bid> {
+        require(limit in 1..100) { "Limit must be 1–100" }
+        return store.mine(user,after,limit)
+    }
     fun winningBuyer(id: UUID) = store.winningBuyer(id)
     fun bids(seller: UUID,id: UUID): List<Bid> {
         if (store.auction(id).seller!=seller) throw AuctionAccessException()

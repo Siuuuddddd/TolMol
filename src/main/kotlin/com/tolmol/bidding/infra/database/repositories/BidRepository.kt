@@ -17,6 +17,9 @@ import java.sql.Timestamp
 class BidRepository(dbs: Databases,private val events: EventOutbox,private val cache: AuctionCache) : BidStore {
     private val db = dbs.marketplace
     private val sql = db.sql
+    override fun mine(user: UUID,after: UUID?,limit: Int): List<Bid> = sql.sql("""select * from bids where buyer=?
+        and (cast(? as uuid) is null or id>?) order by id limit ?""").params(listOf(user,after,after,limit))
+        .query(BidEntity::class.java).list().map { it.toDomain() }
     override fun <T:Any> atomic(work: ()->T): T = db.transactions.execute { work() }!!
     override fun auction(id: UUID,lock: Boolean): Auction {
         val query = "select id as listing,seller,starting_rate,deadline,status,version from listings where id=?" + if(lock) " for update" else ""

@@ -15,6 +15,9 @@ import java.util.UUID
 class ChatRepository(dbs: Databases,private val cache: ChatHistoryCache,private val events: EventOutbox) : ChatStore {
     private val db = dbs.chat
     private val sql = db.sql
+    override fun mine(user: UUID,after: UUID?,limit: Int): List<Conversation> = sql.sql("""select * from threads where (seller=? or buyer=?)
+        and (cast(? as uuid) is null or id>?) order by id limit ?""").params(listOf(user,user,after,after,limit))
+        .query(Conversation::class.java).list()
     override fun open(listing: UUID,seller: UUID,buyer: UUID) = sql.sql("""insert into threads values(?,?,?,?) on conflict(listing,buyer)
         do update set buyer=excluded.buyer returning *""").params(UUID.randomUUID(),listing,seller,buyer).query(Conversation::class.java).single()
     override fun thread(id: UUID) = sql.sql("select * from threads where id=?").param(id).query(Conversation::class.java)

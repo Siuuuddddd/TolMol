@@ -16,6 +16,10 @@ class MarketplaceService(private val store: ListingStore,private val users: Auth
             draft.weight.scale()<=3 && draft.startingRate.signum()>0 && draft.startingRate.scale()<=2 && draft.deadline>Instant.now()) { "Invalid lot details" }
         return Listing(UUID.randomUUID(),seller,draft.category,draft.weight,draft.startingRate,p.latitude,p.longitude,draft.deadline,"OPEN",0).also(store::insert)
     }
+    fun mine(user: UUID,after: UUID?,limit: Int): List<Listing> {
+        require(limit in 1..100) { "Limit must be 1–100" }
+        return store.mine(user,after,limit)
+    }
     fun listing(id: UUID) = store.get(id) ?: throw ListingUnavailableException()
     fun eligible(buyer: UUID,id: UUID): Listing {
         val lot = listing(id)

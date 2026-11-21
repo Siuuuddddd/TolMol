@@ -10,6 +10,10 @@ import java.util.UUID
 
 @Service
 class ChatService(private val store: ChatStore,private val market: MarketplaceService,private val bidding: BiddingService) {
+    fun mine(user: UUID,after: UUID?,limit: Int): List<Conversation> {
+        require(limit in 1..100) { "Limit must be 1–100" }
+        return store.mine(user,after,limit)
+    }
     fun open(buyer: UUID,listing: UUID): Conversation {
         val lot = market.listing(listing)
         if (lot.status=="OPEN") {

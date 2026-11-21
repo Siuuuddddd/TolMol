@@ -4,6 +4,7 @@ import com.tolmol.marketplace.domain.model.*
 import com.tolmol.user.domain.model.Position
 import java.util.UUID
 interface ListingStore {
+    fun mine(user: UUID,after: UUID?,limit: Int): List<Listing>
     fun insert(listing: Listing)
     fun get(id: UUID): Listing?
     fun nearby(position: Position): List<Listing>
