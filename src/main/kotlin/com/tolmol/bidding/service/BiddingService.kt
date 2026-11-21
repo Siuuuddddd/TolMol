@@ -47,6 +47,7 @@ class BiddingService(private val store: BidStore,private val market: Marketplace
             }
         }
     }
+    fun winningBuyer(id: UUID) = store.winningBuyer(id)
     fun bids(seller: UUID,id: UUID): List<Bid> {
         if (store.auction(id).seller!=seller) throw AuctionAccessException()
         return store.bids(id)

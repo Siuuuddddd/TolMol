@@ -8,6 +8,7 @@ interface BidStore {
     fun auction(id: UUID,lock: Boolean = false): Auction
     fun previous(buyer: UUID,key: UUID): Bid?
     fun leading(id: UUID): Bid?
+    fun winningBuyer(id: UUID): UUID?
     fun bids(id: UUID): List<Bid>
     fun lockBuyer(buyer: UUID)
     fun nextBid(buyer: UUID,seller: UUID): Instant?

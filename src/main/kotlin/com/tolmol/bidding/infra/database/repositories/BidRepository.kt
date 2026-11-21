@@ -50,6 +50,8 @@ class BidRepository(dbs: Databases,private val events: EventOutbox,private val c
         if (event=="BID_PLACED") events.append(db,"LEADER_CHANGED",id,recipients,fields)
         else events.append(db,"STATUS_CHANGED",id,recipients,fields)
     }
+    override fun winningBuyer(id: UUID) = sql.sql("select buyer from bids join listings on winning_bid=bids.id where listings.id=?")
+        .param(id).query(UUID::class.java).optional().orElse(null)
     override fun expired() = sql.sql("select id from listings where status='OPEN' and deadline<=now() order by deadline limit 100").query(UUID::class.java).list()
     override fun snapshot(auction: Auction) = cache.read(auction) {
         val leader = leading(auction.listing)

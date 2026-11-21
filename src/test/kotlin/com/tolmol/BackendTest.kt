@@ -5,7 +5,7 @@ import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.containers.PostgreSQLContainer
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 abstract class BackendTest {
     companion object {
         private val redis = org.testcontainers.containers.GenericContainer("redis:7").apply { withExposedPorts(6379); start() }

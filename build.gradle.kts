@@ -9,6 +9,7 @@ version = "0.1.0"
 repositories { mavenCentral() }
 kotlin { jvmToolchain(21) }
 dependencies {
+    implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("org.springframework.kafka:spring-kafka")
     testImplementation("org.testcontainers:kafka")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
