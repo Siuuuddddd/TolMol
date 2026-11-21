@@ -2,13 +2,35 @@ services:
   postgres:
     image: postgres:17-alpine
     environment:
-      POSTGRES_USER: tolmol
+      POSTGRES_USER: ${TOLMOL_DB_USER:-tolmol}
       POSTGRES_PASSWORD: ${TOLMOL_DB_PASSWORD:?Set TOLMOL_DB_PASSWORD}
       POSTGRES_DB: marketplace
     ports: ["127.0.0.1:15432:5432"]
     volumes:
       - postgres:/var/lib/postgresql/data
       - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "PGPASSWORD=$$POSTGRES_PASSWORD psql -h 127.0.0.1 -U $$POSTGRES_USER -d chat -c 'select 1' >/dev/null"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  app:
+    profiles: ["app"]
+    build: .
+    env_file: .env
+    environment:
+      TOLMOL_DB_BASE: jdbc:postgresql://postgres:5432/
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+      redis:
+        condition: service_started
+    ports: ["127.0.0.1:${TOLMOL_HTTP_PORT:-8080}:8080"]
   redis:
     image: redis:7
     ports: ["127.0.0.1:16379:6379"]

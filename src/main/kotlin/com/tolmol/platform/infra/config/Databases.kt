@@ -18,7 +18,7 @@ class Database(val pool: HikariDataSource) {
 class Databases(env: Environment) {
     private fun open(name: String, env: Environment): Database {
         val pool = HikariDataSource().apply {
-            jdbcUrl = env.getProperty("tolmol.db.base", "jdbc:postgresql://localhost:15432/") + name
+            jdbcUrl = env.getProperty("TOLMOL_DB_${name.uppercase()}_URL")?.takeIf { it.isNotBlank() } ?: (env.getProperty("tolmol.db.base", "jdbc:postgresql://localhost:15432/") + name)
             username = env.getProperty("tolmol.db.user", "tolmol")
             password = env.getRequiredProperty("tolmol.db.password")
             maximumPoolSize = 6

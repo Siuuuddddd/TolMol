@@ -37,7 +37,7 @@ Send JSON bodies and use `Authorization: Bearer <accessToken>` on authenticated 
 | `POST /api/listings/{id}/accept` | Seller awards a recorded `bidId`. At the deadline the backend awards the highest bid automatically, or expires an empty auction. |
 | `POST /api/listings/{id}/chat` | Buyer opens or retrieves their thread with the seller. Returns the thread ID. |
 | `GET /api/chat/{threadId}/messages` | Latest 50 messages. Supply `?after=0` to start from the oldest, then pass the last message ID for the next page. |
-| `GET /api/notifications` | Current user’s most recent 100 alerts. |
+| `GET /api/notifications` | Current user’s alerts, newest first, with cursor pagination and read state. |
 | `GET /api/deals`, `GET /api/deals/{listingId}` | Participant-only deal details including pickup coordinates and current revision. |
 | `POST /api/deals/{listingId}/inspect` | Winning buyer submits measured `weight`. A match calculates the total. A mismatch opens a dispute. |
 | `POST /api/deals/{listingId}/propose` | Either participant proposes an `amount` during a dispute. |
@@ -56,10 +56,25 @@ Connect to `ws://localhost:8080/ws` with the bearer header on the HTTP upgrade. 
 {"type":"chat.send","threadId":"<thread UUID>","clientId":"<new UUID>","body":"Can I collect today?"}
 ```
 
-Commands return `ack` with data or `error` with a status. Incoming events contain `eventId`, `type`, `aggregate` and `data`. Deduplicate by event ID. After reconnecting, resubscribe and fetch the latest auction snapshot, chat history or alert inbox. Offline push uses a logging stub. Payment confirmation records an agreement between participants and does not transfer funds.
+Commands return `ack` with data or `error` with a status. Incoming events contain `eventId`, `type`, `aggregate` and `data`. Deduplicate by event ID. After reconnecting, resubscribe and fetch the latest auction snapshot, chat history or alert inbox. Offline push defaults to logging and supports configured FCM/APNs delivery. Payment confirmation records an agreement between participants and does not transfer funds.
 Personal history: GET /api/me/listings, /api/me/bids and /api/me/conversations. Pass limit (1–100, default 25) and after (last returned UUID) until an empty page.
 On /ws, auction.unsubscribe accepts listingId and returns an ack. Subscribe returns a versioned snapshot before subsequent transient events. Reconnect with a new bearer token when the JWT expires.
 Alerts are durable before delivery. On replay, incomplete deliveries are retried with the same eventId; deduplicate live events by that ID.
 On /ws, nearby.subscribe returns the current nearby feed as its ack. listing.available and listing.unavailable stream changes while subscribed. Use nearby.unsubscribe to stop. GET /api/listings remains the reconnect path.
 Register a device with POST /api/me/devices {platform: ANDROID or IOS, token: provider token}. DELETE /api/me/devices/{id} removes an owned registration. Offline pushes default to logging. Enable TOLMOL_PUSH_FCM_ENABLED with FCM_PROJECT_ID, FCM_CLIENT_EMAIL, FCM_PRIVATE_KEY (service account with messaging permission). Enable TOLMOL_PUSH_APNS_ENABLED with APNS_TEAM_ID, APNS_KEY_ID, APNS_BUNDLE_ID, APNS_PRIVATE_KEY and APNS_SANDBOX (true for development). Use secret-injected PKCS#8 PEM keys; literal backslash-n line separators are supported.
 GET /api/notifications accepts before (last row cursor) and limit (1–100). Each row includes cursor and read. GET /api/notifications/unread-count, PUT /api/notifications/{eventId}/read and PUT /api/notifications/read-all operate on your inbox. PUT /api/notifications/preferences/chat with {"muted":true} or false. PUT/DELETE /api/notifications/preferences/listings/{listingId} mute/unmute that lot.
+
+## Deployment
+
+1. Install JDK 21 and Docker. Copy `.env.example` to `.env` for a new setup. Supply independent random values for `TOLMOL_DB_PASSWORD` and `TOLMOL_JWT_SECRET` (at least 32 bytes for JWT). Keep an existing volume’s original database credentials. Leave push disabled for local smoke tests.
+2. From the repo root run `.\gradlew.bat bootJar`, then `docker compose --profile app up --build -d`. On Linux use `./gradlew bootJar`. The Dockerfile packages the executable JAR and runs Java as an unprivileged user. Test `GET /health` at localhost on `TOLMOL_HTTP_PORT` (default 8080).
+3. On a fresh volume Compose initializes the four databases. On each application start Flyway applies pending migrations in each. External PostgreSQL requires provisioned databases and a migration-capable user. Set individual JDBC URLs using the variables in `.env.example` or use the shared URL prefix. Host-mode Redis and Kafka endpoints are configurable; the Compose app uses internal service names.
+4. For TLS, point your domain at the host and configure a reverse proxy to forward HTTPS and WebSocket upgrades. Example Caddyfile for a proxy **on the host**:
+
+```caddyfile
+api.example.com {
+    reverse_proxy 127.0.0.1:8080
+}
+```
+
+**Smoke test.** Register one seller and one buyer, log in and update both locations within 20 km. Publish a lot, find it in discovery, bid, and have the seller accept. Open the winning thread, send a message via /ws, and check recipient delivery. Inspect the weight and confirm the deal as the other participant. Check that the deal is COMPLETED. Test live provider delivery separately with the app closed on a registered device.
