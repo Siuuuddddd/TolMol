@@ -17,6 +17,26 @@ class NotificationRepository(dbs: Databases,private val json: ObjectMapper) : Al
     override fun delivered(user: UUID,eventId: UUID) {
         sql.sql("update alerts set delivered=true where recipient=? and event_id=?").params(user,eventId).update()
     }
-    override fun inbox(user: UUID) = sql.sql("select * from alerts where recipient=? order by sequence desc limit 100")
-        .param(user).query(AlertEntity::class.java).list().map { it.toDomain(json) }
+    override fun inbox(user: UUID,before: Long?,limit: Int) = sql.sql("""select * from alerts where recipient=?
+        and (cast(? as bigint) is null or sequence<?) order by sequence desc limit ?""")
+        .params(listOf(user,before,before,limit)).query(AlertEntity::class.java).list().map { it.toDomain(json) }
+    override fun unread(user: UUID) = sql.sql("select count(*) from alerts where recipient=? and not is_read")
+        .param(user).query(Long::class.java).single()
+    override fun markRead(user: UUID,id: UUID?) {
+        sql.sql("update alerts set is_read=true where recipient=? and (cast(? as uuid) is null or event_id=?)")
+            .params(listOf(user,id,id)).update()
+    }
+    override fun muteChat(user: UUID,muted: Boolean) {
+        sql.sql("insert into notification_preferences values(?,?) on conflict(user_id) do update set mute_chat=excluded.mute_chat")
+            .params(user,muted).update()
+    }
+    override fun muteListing(user: UUID,listing: UUID,muted: Boolean) {
+        val statement = if (muted) "insert into muted_listings values(?,?) on conflict do nothing"
+            else "delete from muted_listings where user_id=? and listing=?"
+        sql.sql(statement).params(user,listing).update()
+    }
+    override fun muted(user: UUID,listing: UUID,chat: Boolean) = sql.sql("""select exists(
+        select 1 from muted_listings where user_id=? and listing=?) or
+        (? and exists(select 1 from notification_preferences where user_id=? and mute_chat))""")
+        .params(user,listing,chat,user).query(Boolean::class.java).single()
 }
