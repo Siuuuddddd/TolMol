@@ -13,3 +13,4 @@
 - Redis GEO stores one entry per indexed listing. Discovery repairs missing index entries from PostgreSQL and falls back to database coordinates when Redis is unavailable or outside its latitude range.
 - Bidding owns committed auction events and versioned bid state; Chat DB owns message history and the chat outbox. Their Kafka topics, Redis caches and shared WebSocket delivery belong to milestones 4–6.
 - Publication and watch changes append activity records transactionally in Marketplace DB. A retryable relay projects them into seller.activity and buyer.activity in Users DB. A unique event ID makes retries safe.
+- Auctions publish auction.events keyed by listing ID. Versioned Redis snapshots cache the highest rate and a public leader alias. Recorded bids and leader changes are separate events at the same version. The seller may select any earlier valid offer. Automatic closure runs once per second.
