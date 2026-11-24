@@ -11,11 +11,8 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.*
 import okhttp3.*
 import java.io.IOException
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class LiveSocket @Inject constructor(
+class LiveSocket(
     private val client: OkHttpClient,
     private val session: SessionStore,
     val json: Json,

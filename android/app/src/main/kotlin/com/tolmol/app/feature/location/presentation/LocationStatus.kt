@@ -15,13 +15,10 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.tolmol.app.core.ui.ScreenViewModel
 import com.tolmol.app.feature.auth.domain.Role
 import com.tolmol.app.feature.location.domain.LocationUseCase
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import java.time.Instant
-import javax.inject.Inject
 
-@HiltViewModel
-class LocationViewModel @Inject constructor(private val location: LocationUseCase) : ScreenViewModel<Instant>() {
+class LocationViewModel(private val location: LocationUseCase) : ScreenViewModel<Instant>() {
     fun refresh(role: Role) = load { location.refresh(role) }
 }
 

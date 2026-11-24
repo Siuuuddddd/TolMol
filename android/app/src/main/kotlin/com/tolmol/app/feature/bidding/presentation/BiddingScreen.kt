@@ -12,17 +12,14 @@ import androidx.lifecycle.viewModelScope
 import com.tolmol.app.core.common.LiveUpdate
 import com.tolmol.app.core.ui.*
 import com.tolmol.app.feature.bidding.domain.*
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
 import java.util.UUID
-import javax.inject.Inject
 
-@HiltViewModel
-class BiddingViewModel @Inject constructor(private val bids: BiddingUseCase) : ScreenViewModel<Auction>() {
+class BiddingViewModel(private val bids: BiddingUseCase) : ScreenViewModel<Auction>() {
     private var subscription: Job? = null
     private var pending: PendingBid? = null
 
@@ -109,8 +106,7 @@ fun BiddingScreen(vm: BiddingViewModel, id: String, category: String, weight: St
     }
 }
 
-@HiltViewModel
-class MyBidsViewModel @Inject constructor(private val bids: BiddingUseCase) : ScreenViewModel<List<MyBid>>() {
+class MyBidsViewModel(private val bids: BiddingUseCase) : ScreenViewModel<List<MyBid>>() {
     val live = bids.live
     fun refresh() = load { bids.mine() }
     fun more() = load {

@@ -10,15 +10,9 @@ import com.google.android.gms.tasks.CancellationTokenSource
 import com.tolmol.app.core.network.serverMessage
 import com.tolmol.app.feature.auth.domain.Role
 import com.tolmol.app.feature.location.domain.*
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.tasks.await
 import kotlinx.serialization.Serializable
-import retrofit2.Retrofit
 import retrofit2.http.Body
 import retrofit2.http.PUT
 import retrofit2.http.Path
@@ -58,11 +52,4 @@ class LocationRepositoryImpl(private val context: Context, private val api: Loca
             cancellation.cancel()
         }
     }
-}
-
-@Module
-@InstallIn(SingletonComponent::class)
-object LocationModule {
-    @Provides fun useCase(@ApplicationContext context: Context, retrofit: Retrofit) =
-        LocationUseCase(LocationRepositoryImpl(context, retrofit.create(LocationApi::class.java)))
 }

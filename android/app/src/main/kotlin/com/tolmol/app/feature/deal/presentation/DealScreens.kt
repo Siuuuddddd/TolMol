@@ -11,18 +11,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tolmol.app.core.common.LiveUpdate
 import com.tolmol.app.core.ui.*
 import com.tolmol.app.feature.deal.domain.*
-import dagger.hilt.android.lifecycle.HiltViewModel
 import java.math.BigDecimal
-import javax.inject.Inject
 
-@HiltViewModel
-class DealsViewModel @Inject constructor(private val deals: DealUseCase) : ScreenViewModel<List<Deal>>() {
+class DealsViewModel(private val deals: DealUseCase) : ScreenViewModel<List<Deal>>() {
     val live = deals.live
     fun refresh() = load { deals.mine() }
 }
 
-@HiltViewModel
-class DealViewModel @Inject constructor(private val deals: DealUseCase) : ScreenViewModel<Deal>() {
+class DealViewModel(private val deals: DealUseCase) : ScreenViewModel<Deal>() {
     val live = deals.live
     fun refresh(id: String) = load { deals.deal(id) }
     fun inspect(id: String, weight: BigDecimal) = load { deals.inspect(id, weight) }

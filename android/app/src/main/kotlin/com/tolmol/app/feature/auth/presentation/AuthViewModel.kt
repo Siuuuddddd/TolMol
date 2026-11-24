@@ -3,18 +3,15 @@ package com.tolmol.app.feature.auth.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tolmol.app.feature.auth.domain.*
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class AuthUiState(val loading: Boolean = true, val account: Account? = null, val role: Role? = null, val error: String? = null)
 
-@HiltViewModel
-class AuthViewModel @Inject constructor(private val auth: AuthUseCase) : ViewModel() {
+class AuthViewModel(private val auth: AuthUseCase) : ViewModel() {
     private val mutable = MutableStateFlow(AuthUiState())
     val state = mutable.asStateFlow()
 

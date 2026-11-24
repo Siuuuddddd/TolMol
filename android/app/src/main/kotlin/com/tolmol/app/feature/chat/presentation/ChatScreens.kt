@@ -9,13 +9,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tolmol.app.core.common.LiveUpdate
 import com.tolmol.app.core.ui.*
 import com.tolmol.app.feature.chat.domain.*
-import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.UUID
 import kotlinx.coroutines.flow.first
-import javax.inject.Inject
 
-@HiltViewModel
-class ConversationsViewModel @Inject constructor(private val chat: ChatUseCase) : ScreenViewModel<List<Conversation>>() {
+class ConversationsViewModel(private val chat: ChatUseCase) : ScreenViewModel<List<Conversation>>() {
     val live = chat.live
     fun refresh() = load { chat.mine() }
     fun more() = load {
@@ -26,8 +23,7 @@ class ConversationsViewModel @Inject constructor(private val chat: ChatUseCase) 
 
 data class ThreadState(val conversation: Conversation, val messages: List<Message>, val lastSent: String? = null)
 
-@HiltViewModel
-class ChatViewModel @Inject constructor(private val chat: ChatUseCase) : ScreenViewModel<ThreadState>() {
+class ChatViewModel(private val chat: ChatUseCase) : ScreenViewModel<ThreadState>() {
     val live = chat.live
     private var pending: Pair<String, String>? = null
 
@@ -55,8 +51,7 @@ class ChatViewModel @Inject constructor(private val chat: ChatUseCase) : ScreenV
     }
 }
 
-@HiltViewModel
-class OpenChatViewModel @Inject constructor(private val chat: ChatUseCase) : ScreenViewModel<Conversation>() {
+class OpenChatViewModel(private val chat: ChatUseCase) : ScreenViewModel<Conversation>() {
     fun open(listing: String) = load { chat.open(listing) }
 }
 

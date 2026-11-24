@@ -2,10 +2,6 @@ package com.tolmol.app.core.network
 
 import com.tolmol.app.BuildConfig
 import com.tolmol.app.core.datastore.SessionStore
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -13,16 +9,16 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import java.util.concurrent.TimeUnit
-import javax.inject.Singleton
+import org.koin.dsl.module
 
-@Module
-@InstallIn(SingletonComponent::class)
-object NetworkModule {
-    @Provides @Singleton
-    fun json() = Json { ignoreUnknownKeys = true }
+val networkModule = module {
+    single { Json { ignoreUnknownKeys = true } }
 
-    @Provides @Singleton
-    fun client(session: SessionStore): OkHttpClient = OkHttpClient.Builder()
+    single { createHttpClient(get()) }
+    single { createRetrofit(get(), get()) }
+}
+
+private fun createHttpClient(session: SessionStore): OkHttpClient = OkHttpClient.Builder()
         .pingInterval(30, TimeUnit.SECONDS)
         .addInterceptor { chain ->
             val original = chain.request()
@@ -36,10 +32,8 @@ object NetworkModule {
             response
         }.build()
 
-    @Provides @Singleton
-    fun retrofit(client: OkHttpClient, json: Json): Retrofit = Retrofit.Builder()
-        .baseUrl(BuildConfig.REST_URL)
-        .client(client)
-        .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
-        .build()
-}
+private fun createRetrofit(client: OkHttpClient, json: Json): Retrofit = Retrofit.Builder()
+    .baseUrl(BuildConfig.REST_URL)
+    .client(client)
+    .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+    .build()

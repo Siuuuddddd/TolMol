@@ -10,13 +10,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tolmol.app.core.ui.*
 import com.tolmol.app.feature.listing.domain.*
-import dagger.hilt.android.lifecycle.HiltViewModel
 import java.math.BigDecimal
 import java.time.Instant
-import javax.inject.Inject
 
-@HiltViewModel
-class ListingViewModel @Inject constructor(private val listings: ListingUseCase) : ScreenViewModel<List<Listing>>() {
+class ListingViewModel(private val listings: ListingUseCase) : ScreenViewModel<List<Listing>>() {
     fun refresh() = load { listings.mine() }
     fun more() = load {
         val current = state.value.value.orEmpty()
@@ -24,15 +21,13 @@ class ListingViewModel @Inject constructor(private val listings: ListingUseCase)
     }
 }
 
-@HiltViewModel
-class PublishViewModel @Inject constructor(private val listings: ListingUseCase) : ScreenViewModel<Listing>() {
+class PublishViewModel(private val listings: ListingUseCase) : ScreenViewModel<Listing>() {
     fun publish(category: String, weight: BigDecimal, opening: BigDecimal, hours: Long) = load {
         listings.publish(category.trim(), weight, opening, Instant.now().plusSeconds(hours * 3600).toString())
     }
 }
 
-@HiltViewModel
-class OffersViewModel @Inject constructor(private val listings: ListingUseCase) : ScreenViewModel<List<Offer>>() {
+class OffersViewModel(private val listings: ListingUseCase) : ScreenViewModel<List<Offer>>() {
     var awarded by mutableStateOf(false)
         private set
 

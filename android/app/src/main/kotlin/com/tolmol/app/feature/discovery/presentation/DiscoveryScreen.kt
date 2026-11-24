@@ -11,14 +11,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tolmol.app.core.ui.*
 import com.tolmol.app.feature.discovery.domain.*
-import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Instant
-import javax.inject.Inject
 
 data class NearbyLots(val lots: List<NearbyLot>, val watched: Set<String>)
 
-@HiltViewModel
-class DiscoveryViewModel @Inject constructor(private val discovery: DiscoveryUseCase) : ScreenViewModel<NearbyLots>() {
+class DiscoveryViewModel(private val discovery: DiscoveryUseCase) : ScreenViewModel<NearbyLots>() {
     fun refresh() = load { fetch() }
 
     fun watch(id: String, watched: Boolean) = load {

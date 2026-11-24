@@ -4,11 +4,6 @@ import com.tolmol.app.core.network.serverMessage
 import com.tolmol.app.core.websocket.LiveSocket
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.*
-import retrofit2.Retrofit
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
 import java.math.BigDecimal
 
 class ListingRepositoryImpl(private val api: ListingApi) : ListingRepository {
@@ -29,11 +24,4 @@ class ListingRepositoryImpl(private val api: ListingApi) : ListingRepository {
     private suspend fun <T> request(action: suspend () -> T): T = try { action() }
     catch (error: CancellationException) { throw error }
     catch (error: Exception) { throw ListingError.RequestFailed(error.serverMessage()) }
-}
-
-@Module
-@InstallIn(SingletonComponent::class)
-object ListingModule {
-    @Provides fun useCase(retrofit: Retrofit) =
-        ListingUseCase(ListingRepositoryImpl(retrofit.create(ListingApi::class.java)))
 }

@@ -7,9 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import com.tolmol.app.core.network.DebugNetworkPermission
 import com.tolmol.app.core.ui.TolMolTheme
 import com.tolmol.app.navigation.TolMolNavigation
-import dagger.hilt.android.AndroidEntryPoint
 
-@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

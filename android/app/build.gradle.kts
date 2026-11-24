@@ -4,8 +4,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose)
     alias(libs.plugins.serialization)
-    alias(libs.plugins.hilt)
-    alias(libs.plugins.ksp)
 }
 
 fun endpoint(property: String, fallback: String): String {
@@ -54,9 +52,9 @@ dependencies {
     implementation(libs.navigation)
     implementation(libs.nav.viewmodel)
     implementation(libs.lifecycle)
-    implementation(libs.hilt.compose)
-    implementation(libs.hilt)
-    ksp(libs.hilt.compiler)
+    implementation(libs.koin.android)
+    implementation(libs.koin.compose)
+    testImplementation(libs.koin.test)
     implementation(libs.retrofit)
     implementation(libs.converter)
     implementation(libs.okhttp)

@@ -6,11 +6,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tolmol.app.core.common.LiveUpdate
 import com.tolmol.app.core.ui.*
 import com.tolmol.app.feature.notification.domain.*
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 
-@HiltViewModel
-class NotificationViewModel @Inject constructor(private val inbox: NotificationUseCase) : ScreenViewModel<List<Alert>>() {
+class NotificationViewModel(private val inbox: NotificationUseCase) : ScreenViewModel<List<Alert>>() {
     val live = inbox.live
     fun refresh() = load { inbox.inbox() }
     fun read(id: String) = load { inbox.read(id); inbox.inbox() }

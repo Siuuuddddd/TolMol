@@ -24,7 +24,7 @@ Run `.\gradlew.bat build` for the full build and integration tests. Tests use th
 ## Android
 
 1. Start the backend from `backend/` as above. Check that `http://localhost:8080/health` reports `UP`.
-2. Open `android/` in Android Studio and sync. Use JDK 21 and install Android SDK 37 from SDK Manager if prompted. Run the **app** configuration on an emulator with Google Play services. The reference device is Pixel 9 Pro.
+2. Open `android/` in Android Studio and sync. The project uses JDK 21. Install Android SDK 37 from SDK Manager if prompted. Run the **app** configuration on an emulator with Google Play services. The reference device is Pixel 9 Pro.
 3. In the emulator's **Extended controls → Location**, set and send a point. Choose a role in TolMol and allow location. A buyer and a seller must be separate accounts to test bidding on the seller's lot.
 4. Emulator debug builds resolve the host at `10.0.2.2:8080`. For a physical device on the same network, add the following to your user Gradle properties (`~/.gradle/gradle.properties`), using your computer's reachable LAN IP, then sync and rebuild.
 
@@ -35,7 +35,7 @@ Run `.\gradlew.bat build` for the full build and integration tests. Tests use th
 
    On Android 17, grant the debug app local-network permission when prompted. Release builds require HTTPS and WSS. Set `tolmolReleaseRestUrl` and `tolmolReleaseSocketUrl` to your hosted backend.
 
-From `android/`, run `./gradlew assembleDebug testDebugUnitTest` or `.\gradlew.bat assembleDebug testDebugUnitTest` on Windows.
+From `android/`, run `./gradlew assembleDebug testDebugUnitTest` or `.\gradlew.bat assembleDebug testDebugUnitTest` on Windows. The unit suite includes Koin module verification.
 
 ## REST API
 

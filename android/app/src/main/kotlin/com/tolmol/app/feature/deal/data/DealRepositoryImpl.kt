@@ -4,11 +4,6 @@ import com.tolmol.app.core.network.serverMessage
 import com.tolmol.app.core.websocket.LiveSocket
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.*
-import retrofit2.Retrofit
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
 import java.math.BigDecimal
 
 class DealRepositoryImpl(private val api: DealApi, private val socket: LiveSocket) : DealRepository {
@@ -27,11 +22,4 @@ class DealRepositoryImpl(private val api: DealApi, private val socket: LiveSocke
     private suspend fun <T> request(action: suspend () -> T): T = try { action() }
     catch (error: CancellationException) { throw error }
     catch (error: Exception) { throw DealError.RequestFailed(error.serverMessage()) }
-}
-
-@Module
-@InstallIn(SingletonComponent::class)
-object DealModule {
-    @Provides fun useCase(retrofit: Retrofit, socket: LiveSocket) =
-        DealUseCase(DealRepositoryImpl(retrofit.create(DealApi::class.java), socket))
 }

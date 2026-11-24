@@ -6,7 +6,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import org.koin.compose.viewmodel.koinViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.*
@@ -40,7 +40,7 @@ enum class MarketplaceTab(val title: String) {
 @Serializable data class DealRoute(val id: String) : NavKey
 
 @Composable
-fun TolMolNavigation(auth: AuthViewModel = hiltViewModel()) {
+fun TolMolNavigation(auth: AuthViewModel = koinViewModel()) {
     val state by auth.state.collectAsStateWithLifecycle()
     var register by rememberSaveable { mutableStateOf(false) }
     var showForm by rememberSaveable { mutableStateOf(false) }
@@ -91,7 +91,7 @@ private fun MarketplaceNavigation(account: Account, role: Role, changeRole: () -
                 else TextButton(changeRole) { Text(if (role == Role.BUYER) "Buyer mode" else "Seller mode") }
                 TextButton(logout) { Text("Sign out") }
             }
-            LocationStatus(role, hiltViewModel()) { location = it }
+            LocationStatus(role, koinViewModel()) { location = it }
             NavDisplay(
                 backStack = stack,
                 modifier = Modifier.weight(1f),
@@ -100,41 +100,41 @@ private fun MarketplaceNavigation(account: Account, role: Role, changeRole: () -
                 entryProvider = entryProvider {
                     entry<Home> { route ->
                         when (route.tab) {
-                            MarketplaceTab.DISCOVER -> DiscoveryScreen(hiltViewModel(), location) { lot ->
+                            MarketplaceTab.DISCOVER -> DiscoveryScreen(koinViewModel(), location) { lot ->
                                 stack.add(AuctionRoute(lot.id, lot.category, lot.weight.toPlainString(), lot.startingRate.toPlainString(), lot.deadline))
                             }
-                            MarketplaceTab.BIDS -> MyBidsScreen(hiltViewModel()) { stack.add(DealRoute(it)) }
-                            MarketplaceTab.LISTINGS -> MyListingsScreen(hiltViewModel(), { stack.add(PublishRoute) }) {
+                            MarketplaceTab.BIDS -> MyBidsScreen(koinViewModel()) { stack.add(DealRoute(it)) }
+                            MarketplaceTab.LISTINGS -> MyListingsScreen(koinViewModel(), { stack.add(PublishRoute) }) {
                                 stack.add(OffersRoute(it.id, it.category, it.status, it.deadline))
                             }
-                            MarketplaceTab.CHAT -> ConversationsScreen(hiltViewModel(), account.id, null) { stack.add(ChatRoute(it.id)) }
-                            MarketplaceTab.ALERTS -> InboxScreen(hiltViewModel())
-                            MarketplaceTab.DEALS -> DealsScreen(hiltViewModel(), account.id, role == Role.SELLER) { stack.add(DealRoute(it)) }
+                            MarketplaceTab.CHAT -> ConversationsScreen(koinViewModel(), account.id, null) { stack.add(ChatRoute(it.id)) }
+                            MarketplaceTab.ALERTS -> InboxScreen(koinViewModel())
+                            MarketplaceTab.DEALS -> DealsScreen(koinViewModel(), account.id, role == Role.SELLER) { stack.add(DealRoute(it)) }
                         }
                     }
                     entry<AuctionRoute> { lot ->
-                        BiddingScreen(hiltViewModel(), lot.id, lot.category, lot.weight, lot.opening, lot.deadline,
+                        BiddingScreen(koinViewModel(), lot.id, lot.category, lot.weight, lot.opening, lot.deadline,
                             { stack.add(OpenChatRoute(lot.id)) },
                             { stack.add(DealRoute(lot.id)) })
                     }
-                    entry<PublishRoute> { PublishScreen(hiltViewModel(), back) }
+                    entry<PublishRoute> { PublishScreen(koinViewModel(), back) }
                     entry<OffersRoute> { lot ->
-                        OffersScreen(hiltViewModel(), lot.id, lot.category, lot.status, lot.deadline,
+                        OffersScreen(koinViewModel(), lot.id, lot.category, lot.status, lot.deadline,
                             { stack.add(ConversationsRoute(lot.id)) },
                             { stack.add(DealRoute(lot.id)) })
                     }
                     entry<ConversationsRoute> { route ->
-                        ConversationsScreen(hiltViewModel(), account.id, route.listing) { stack.add(ChatRoute(it.id)) }
+                        ConversationsScreen(koinViewModel(), account.id, route.listing) { stack.add(ChatRoute(it.id)) }
                     }
-                    entry<ChatRoute> { ChatThreadScreen(hiltViewModel(), it.id, account.id) }
+                    entry<ChatRoute> { ChatThreadScreen(koinViewModel(), it.id, account.id) }
                     entry<OpenChatRoute> { route ->
-                        val vm: OpenChatViewModel = hiltViewModel()
+                        val vm: OpenChatViewModel = koinViewModel()
                         val state by vm.state.collectAsStateWithLifecycle()
                         LaunchedEffect(route.listing) { vm.open(route.listing) }
                         LaunchedEffect(state.value) { state.value?.let { stack[stack.lastIndex] = ChatRoute(it.id) } }
                         Screen("Opening conversation") { ScreenFeedback(state) { vm.open(route.listing) } }
                     }
-                    entry<DealRoute> { DealScreen(hiltViewModel(), it.id, account.id) }
+                    entry<DealRoute> { DealScreen(koinViewModel(), it.id, account.id) }
                 },
             )
         }

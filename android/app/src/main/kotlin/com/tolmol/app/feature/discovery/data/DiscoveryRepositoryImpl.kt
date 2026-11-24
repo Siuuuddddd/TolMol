@@ -4,11 +4,6 @@ import com.tolmol.app.core.network.serverMessage
 import com.tolmol.app.core.websocket.LiveSocket
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.*
-import retrofit2.Retrofit
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
 import java.math.BigDecimal
 
 class DiscoveryRepositoryImpl(private val api: DiscoveryApi) : DiscoveryRepository {
@@ -23,11 +18,4 @@ class DiscoveryRepositoryImpl(private val api: DiscoveryApi) : DiscoveryReposito
     private suspend fun <T> request(action: suspend () -> T): T = try { action() }
     catch (error: CancellationException) { throw error }
     catch (error: Exception) { throw DiscoveryError.RequestFailed(error.serverMessage()) }
-}
-
-@Module
-@InstallIn(SingletonComponent::class)
-object DiscoveryModule {
-    @Provides fun useCase(retrofit: Retrofit) =
-        DiscoveryUseCase(DiscoveryRepositoryImpl(retrofit.create(DiscoveryApi::class.java)))
 }
