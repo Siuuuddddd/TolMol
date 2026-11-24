@@ -16,6 +16,7 @@ import kotlinx.serialization.Serializable
 import java.time.Instant
 import com.tolmol.app.feature.auth.domain.*
 import com.tolmol.app.feature.auth.presentation.*
+import com.tolmol.app.feature.location.presentation.*
 
 @Serializable data class Home(val tab: String) : NavKey
 @Serializable data class AuctionRoute(val id: String, val category: String, val weight: String, val opening: String, val deadline: String) : NavKey
@@ -64,7 +65,7 @@ private fun MarketplaceNavigation(account: Account, role: Role, changeRole: () -
                 else TextButton(changeRole) { Text(if (role == Role.BUYER) "Buyer mode" else "Seller mode") }
                 TextButton(logout) { Text("Sign out") }
             }
-
+            LocationStatus(role, hiltViewModel()) { location = it }
             NavDisplay(
                 backStack = stack,
                 modifier = Modifier.weight(1f),
