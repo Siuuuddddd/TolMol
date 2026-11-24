@@ -4,3 +4,4 @@ build/
 .env
 .idea/
 local.properties
+/android/gradle/gradle-daemon-jvm.properties
