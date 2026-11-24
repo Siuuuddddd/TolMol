@@ -29,3 +29,4 @@
 ## Android client
 
 - The app restores the DataStore JWT and loads roles from the authenticated GET /api/me endpoint. The local session ends at token expiry or when a protected request rejects it.
+- Buyer bid history returns a status from the authoritative listing and winning bid, while preserving UUID pagination and account scoping.

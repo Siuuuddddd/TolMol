@@ -47,7 +47,7 @@ class BiddingService(private val store: BidStore,private val market: Marketplace
             }
         }
     }
-    fun mine(user: UUID,after: UUID?,limit: Int): List<Bid> {
+    fun mine(user: UUID,after: UUID?,limit: Int): List<BidHistoryEntry> {
         require(limit in 1..100) { "Limit must be 1–100" }
         return store.mine(user,after,limit)
     }

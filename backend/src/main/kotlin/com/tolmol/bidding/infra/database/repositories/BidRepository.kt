@@ -17,9 +17,18 @@ import java.sql.Timestamp
 class BidRepository(dbs: Databases,private val events: EventOutbox,private val cache: AuctionCache) : BidStore {
     private val db = dbs.marketplace
     private val sql = db.sql
-    override fun mine(user: UUID,after: UUID?,limit: Int): List<Bid> = sql.sql("""select * from bids where buyer=?
-        and (cast(? as uuid) is null or id>?) order by id limit ?""").params(listOf(user,after,after,limit))
-        .query(BidEntity::class.java).list().map { it.toDomain() }
+    override fun mine(user: UUID,after: UUID?,limit: Int): List<BidHistoryEntry> = sql.sql("""
+        select b.id, b.listing, b.rate, b.created_at,
+            case when l.winning_bid = b.id then 'WON'
+                 when l.winning_bid is not null then 'LOST'
+                 when l.status <> 'OPEN' then l.status
+                 when exists (select 1 from bids higher where higher.listing = b.listing and higher.rate > b.rate)
+                      then 'OUTBID'
+                 else 'LEADING' end as status
+        from bids b join listings l on l.id = b.listing
+        where b.buyer = ? and (cast(? as uuid) is null or b.id > ?)
+        order by b.id limit ?
+        """).params(listOf(user,after,after,limit)).query(BidHistoryEntry::class.java).list()
     override fun <T:Any> atomic(work: ()->T): T = db.transactions.execute { work() }!!
     override fun auction(id: UUID,lock: Boolean): Auction {
         val query = "select id as listing,seller,starting_rate,deadline,status,version from listings where id=?" + if(lock) " for update" else ""

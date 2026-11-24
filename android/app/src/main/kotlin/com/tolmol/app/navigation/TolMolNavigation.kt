@@ -21,6 +21,7 @@ import com.tolmol.app.feature.discovery.presentation.*
 import com.tolmol.app.feature.bidding.presentation.*
 import com.tolmol.app.feature.listing.presentation.*
 
+
 @Serializable data class Home(val tab: String) : NavKey
 @Serializable data class AuctionRoute(val id: String, val category: String, val weight: String, val opening: String, val deadline: String) : NavKey
 @Serializable data object PublishRoute : NavKey
@@ -49,7 +50,7 @@ fun TolMolNavigation(auth: AuthViewModel = hiltViewModel()) {
 
 @Composable
 private fun MarketplaceNavigation(account: Account, role: Role, changeRole: () -> Unit, logout: () -> Unit) {
-    val tabs = if (role == Role.BUYER) listOf("Discover") else listOf("Listings")
+    val tabs = if (role == Role.BUYER) listOf("Discover", "Bids") else listOf("Listings")
     val stack = rememberNavBackStack(Home(tabs.first()))
     val back = { if (stack.size > 1) stack.removeAt(stack.lastIndex); Unit }
     var location by remember { mutableStateOf<Instant?>(null) }
@@ -80,7 +81,7 @@ private fun MarketplaceNavigation(account: Account, role: Role, changeRole: () -
                             "Discover" -> DiscoveryScreen(hiltViewModel(), location) { lot ->
                                 stack.add(AuctionRoute(lot.id, lot.category, lot.weight.toPlainString(), lot.startingRate.toPlainString(), lot.deadline))
                             }
-
+                            "Bids" -> MyBidsScreen(hiltViewModel()) { Unit }
                             "Listings" -> MyListingsScreen(hiltViewModel(), { stack.add(PublishRoute) }) {
                                 stack.add(OffersRoute(it.id, it.category, it.status, it.deadline))
                             }

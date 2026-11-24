@@ -25,6 +25,7 @@ class BiddingViewModelTest {
                 override suspend fun auction(id: String) = snapshot
                 override suspend fun subscribe(id: String) = snapshot
                 override suspend fun unsubscribe(id: String) = Unit
+                override suspend fun mine(after: String?) = emptyList<MyBid>()
                 override suspend fun place(id: String, rate: BigDecimal, key: String) {
                     attempts += key
                     if (attempts.size == 1) throw BiddingError.RequestFailed("Next bid allowed at 2026-11-25T12:00:00Z")

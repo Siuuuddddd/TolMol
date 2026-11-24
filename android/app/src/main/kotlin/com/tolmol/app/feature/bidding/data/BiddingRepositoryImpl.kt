@@ -20,7 +20,9 @@ class BiddingRepositoryImpl(private val api: BiddingApi, private val socket: Liv
             put("requestKey", key)
         })
     }
-
+    override suspend fun mine(after: String?) = request {
+        api.mine(after).map { MyBid(it.id, it.listing, it.rate.content.toBigDecimal(), it.createdAt, it.status) }
+    }
     override suspend fun subscribe(id: String) = request {
         socket.json.decodeFromJsonElement<AuctionDto>(socket.command("auction.subscribe", "listingId" to id)).toDomain()
     }

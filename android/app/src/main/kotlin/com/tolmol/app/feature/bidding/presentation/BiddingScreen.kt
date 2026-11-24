@@ -108,3 +108,34 @@ fun BiddingScreen(vm: BiddingViewModel, id: String, category: String, weight: St
         if (openDeal != null && (auction?.status == "AWARDED" || !now.isBefore(end))) OutlinedButton(openDeal) { Text("Check pickup deal") }
     }
 }
+
+@HiltViewModel
+class MyBidsViewModel @Inject constructor(private val bids: BiddingUseCase) : ScreenViewModel<List<MyBid>>() {
+    val live = bids.live
+    fun refresh() = load { bids.mine() }
+    fun more() = load {
+        val current = state.value.value.orEmpty()
+        current + bids.mine(current.lastOrNull()?.id)
+    }
+}
+
+@Composable
+fun MyBidsScreen(vm: MyBidsViewModel, openDeal: (String) -> Unit) {
+    val state by vm.state.collectAsStateWithLifecycle()
+    LaunchedEffect(vm) {
+        vm.refresh()
+        vm.live.collect { if (it is LiveUpdate.Connected || it is LiveUpdate.Event && it.type.startsWith("BID_")) vm.refresh() }
+    }
+    Screen("My bids") {
+        ScreenFeedback(state) { vm.refresh() }
+        if (state.value?.isEmpty() == true) Text("You have not placed any bids.")
+        for (bid in state.value.orEmpty()) {
+            if (bid.status == "WON") RowCard("₹${bid.rate.toPlainString()}/kg · Won", bid.createdAt) { openDeal(bid.listing) }
+            else {
+                Text("₹${bid.rate.toPlainString()}/kg · ${bid.status.label()}", style = MaterialTheme.typography.titleMedium)
+                Text(bid.createdAt)
+            }
+        }
+        if (state.value.orEmpty().size >= 25) TextButton({ vm.more() }, enabled = !state.loading) { Text("Load more") }
+    }
+}

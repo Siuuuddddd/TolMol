@@ -4,7 +4,7 @@ import com.tolmol.bidding.domain.model.*
 import java.util.UUID
 import java.time.Instant
 interface BidStore {
-    fun mine(user: UUID,after: UUID?,limit: Int): List<Bid>
+    fun mine(user: UUID,after: UUID?,limit: Int): List<BidHistoryEntry>
     fun <T:Any> atomic(work: ()->T): T
     fun auction(id: UUID,lock: Boolean = false): Auction
     fun previous(buyer: UUID,key: UUID): Bid?
