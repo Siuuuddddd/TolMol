@@ -1,5 +1,6 @@
 package com.tolmol.app.navigation
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -44,6 +45,7 @@ fun TolMolNavigation(auth: AuthViewModel = koinViewModel()) {
     val state by auth.state.collectAsStateWithLifecycle()
     var register by rememberSaveable { mutableStateOf(false) }
     var showForm by rememberSaveable { mutableStateOf(false) }
+    var preferredRole by rememberSaveable { mutableStateOf<Role?>(null) }
     val role = state.role
     val account = state.account
     LaunchedEffect(account?.id) {
@@ -52,14 +54,28 @@ fun TolMolNavigation(auth: AuthViewModel = koinViewModel()) {
             showForm = true
         }
     }
+    BackHandler(enabled = account == null && showForm && !state.loading && state.error == null) {
+        showForm = false
+    }
+    if (account == null && !showForm && !state.loading && state.error == null) {
+        WelcomeScreen(
+            signIn = {
+                preferredRole = null
+                register = false
+                showForm = true
+            },
+            register = { selectedRole ->
+                preferredRole = selectedRole
+                register = true
+                showForm = true
+            },
+        )
+        return
+    }
     Box(Modifier.fillMaxSize().safeDrawingPadding().imePadding()) {
         when {
             account == null && state.loading && !showForm -> CircularProgressIndicator(Modifier.padding(24.dp))
-            account == null && !showForm && state.error == null -> WelcomeScreen(
-                signIn = { register = false; showForm = true },
-                register = { register = true; showForm = true },
-            )
-            account == null -> AuthForm(state, register, auth) { register = !register }
+            account == null -> AuthForm(state, register, preferredRole, auth) { register = !register }
             role == null -> RolePicker(state, auth::select, { auth.logout() })
             else -> key(account.id, role) {
                 MarketplaceNavigation(account, role, { auth.select(null) }, { auth.logout() })

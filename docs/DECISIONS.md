@@ -36,4 +36,5 @@
 - Live updates use one bearer-authenticated WebSocket. The client serializes commands because the server replies lack correlation IDs. Reconnection reloads current state and renews the active auction subscription.
 - The Pixel 9 Pro onboarding uses the Scrap Conveyor palette and original artwork. Native Compose text and controls support Android font scaling.
 - Android starts Koin in the Application and binds feature repositories, use cases, and ViewModels in the Koin application module. Navigation 3 scopes the injected ViewModels to each entry. The JVM unit suite verifies the dependency graph without starting Android.
+- The signed-out welcome screen uses the approved Scrap Conveyor artwork to preserve its lettering and layout. Compose supplies the accessible actions and renders scalable text at larger Android font settings. The seller and buyer actions preselect that role during registration.
 - Android Studio uses its bundled JDK for Gradle sync. Studio-generated daemon JVM criteria are local because pinning a different JDK forced toolchain provisioning during Windows IDE sync.

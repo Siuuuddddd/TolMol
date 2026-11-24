@@ -14,11 +14,11 @@ import androidx.compose.ui.unit.dp
 import com.tolmol.app.feature.auth.domain.Role
 
 @Composable
-fun AuthForm(state: AuthUiState, register: Boolean, viewModel: AuthViewModel, toggleMode: () -> Unit) {
+fun AuthForm(state: AuthUiState, register: Boolean, preferredRole: Role?, viewModel: AuthViewModel, toggleMode: () -> Unit) {
     var email by rememberSaveable { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var buyer by rememberSaveable { mutableStateOf(true) }
-    var seller by rememberSaveable { mutableStateOf(true) }
+    var buyer by rememberSaveable(preferredRole) { mutableStateOf(preferredRole != Role.SELLER) }
+    var seller by rememberSaveable(preferredRole) { mutableStateOf(preferredRole != Role.BUYER) }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)) {
         Text("TolMol", style = MaterialTheme.typography.displaySmall, color = MaterialTheme.colorScheme.primary)
