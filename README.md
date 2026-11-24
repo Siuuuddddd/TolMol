@@ -1,10 +1,10 @@
-# TolMol backend
+# TolMol
 
 TolMol is a Kotlin and Spring Boot modular monolith for local scrap auctions. It uses PostgreSQL for identity, locations, marketplace and chat, Redis for caches, Kafka for events, and one authenticated WebSocket for live updates.
 
 ## Run locally
 
-Install JDK 21 and start Docker Desktop with Linux containers. From the repository root in PowerShell, run the following once to create local development credentials. The application and Compose both read the ignored `.env` file.
+Install JDK 21 and start Docker Desktop with Linux containers. From the `backend/` folder in PowerShell, run the following once to create local development credentials. The application and Compose both read the ignored `.env` file.
 
 ```powershell
 if (!(Test-Path .env)) {
@@ -67,7 +67,7 @@ GET /api/notifications accepts before (last row cursor) and limit (1–100). Eac
 ## Deployment
 
 1. Install JDK 21 and Docker. Copy `.env.example` to `.env` for a new setup. Supply independent random values for `TOLMOL_DB_PASSWORD` and `TOLMOL_JWT_SECRET` (at least 32 bytes for JWT). Keep an existing volume’s original database credentials. Leave push disabled for local smoke tests.
-2. From the repo root run `.\gradlew.bat bootJar`, then `docker compose --profile app up --build -d`. On Linux use `./gradlew bootJar`. The Dockerfile packages the executable JAR and runs Java as an unprivileged user. Test `GET /health` at localhost on `TOLMOL_HTTP_PORT` (default 8080).
+2. From `backend/` run `.\gradlew.bat bootJar`, then `docker compose --profile app up --build -d`. On Linux use `./gradlew bootJar`. The Dockerfile packages the executable JAR and runs Java as an unprivileged user. Test `GET /health` at localhost on `TOLMOL_HTTP_PORT` (default 8080).
 3. On a fresh volume Compose initializes the four databases. On each application start Flyway applies pending migrations in each. External PostgreSQL requires provisioned databases and a migration-capable user. Set individual JDBC URLs using the variables in `.env.example` or use the shared URL prefix. Host-mode Redis and Kafka endpoints are configurable; the Compose app uses internal service names.
 4. For TLS, point your domain at the host and configure a reverse proxy to forward HTTPS and WebSocket upgrades. Example Caddyfile for a proxy **on the host**:
 

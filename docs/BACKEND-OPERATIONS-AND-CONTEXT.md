@@ -55,7 +55,7 @@ flowchart TD
     N -->|offline alerts| Push[Configured push provider]
 ```
 
-| Code under `src/main/kotlin/com/tolmol/` | What it owns and who uses it |
+| Code under `backend/src/main/kotlin/com/tolmol/` | What it owns and who uses it |
 |---|---|
 | `user` | Shared identity, roles, authentication and role-specific locations. Registration uses email and bcrypt. Login issues a one-hour HS256 JWT containing the user UUID. REST and WebSocket upgrades use the bearer token. A returning user signs in again after expiry. Marketplace uses this service to check role and fresh location. |
 | `marketplace` | Publishing, seller inventory, discovery, watchlists and buyer eligibility. Returning users can retrieve their own listings without saved IDs. Listing publication, relisting and closure produce availability events for nearby subscribers. |
@@ -103,7 +103,7 @@ flowchart TD
 ## Running, checking and continuing
 
 - Use JDK 21 and Docker. For a new checkout copy `.env.example` to a local `.env` and supply independent `TOLMOL_DB_PASSWORD` and `TOLMOL_JWT_SECRET` values; the JWT key requires at least 32 bytes. Preserve existing volume credentials. Keep secrets out of Git.
-- Host application: run `docker compose up -d`, then `.\gradlew.bat bootRun`. Containerized application: run `.\gradlew.bat bootJar`, then `docker compose --profile app up --build -d`. Flyway applies migrations to the four databases on startup. Check `GET /health`.
+- Host application from `backend/`: run `docker compose up -d`, then `.\gradlew.bat bootRun`. Containerized application from `backend/`: run `.\gradlew.bat bootJar`, then `docker compose --profile app up --build -d`. Flyway applies migrations to the four databases on startup. Check `GET /health`.
 - Verification recorded at the reviewed baseline: **18 tests passed, zero failures, errors or skips**; the containerized app returned `UP`. The local test reports were inspected for this handoff. Run `.\gradlew.bat build` for a fresh result after code changes.
 - Remaining manual acceptance: supply provider credentials and verify closed-app delivery on real Android and iOS devices. For an external environment, configure hosting, TLS, secrets and backups and repeat the README smoke test. Multi-instance socket routing, advanced operational tooling and payment processing remain outside the agreed MVP.
 - On resuming in a new chat, check `git status --short --branch` and compare current HEAD with the reviewed snapshot. Treat the PRD and recorded decisions as the product reference and the current code and migrations as evidence of actual behavior.

@@ -1,5 +1,7 @@
 # TolMol backend handoff
 
+The backend lives in `backend/`. The separate Android project uses `android/`.
+
 **Baseline:** [`main` at `ecc1de9`](https://github.com/Siuuuddddd/TolMol/tree/ecc1de9). The original MVP and all seven backend follow-up items shipped. Continue from the current checkout after comparing it with this baseline. This handoff covers backend development only. Mobile development is deferred.
 
 The [PRD](https://github.com/Siuuuddddd/TolMol/blob/ecc1de9/docs/PRD.md) owns product behavior. [DECISIONS.md](https://github.com/Siuuuddddd/TolMol/blob/ecc1de9/docs/DECISIONS.md) explains implementation choices. The [README](https://github.com/Siuuuddddd/TolMol/blob/ecc1de9/README.md) contains local setup, endpoint paths, request fields and WebSocket examples. The remaining manual checks are listed below.
@@ -25,7 +27,7 @@ Deal states are `PENDING_PICKUP`, `WEIGHT_DISPUTE`, `COMPLETED` and `CANCELLED_R
 
 ## Where the behavior lives
 
-One Kotlin/Spring Boot application runs on JDK 21. Source modules under `src/main/kotlin/com/tolmol` are `user`, `marketplace`, `bidding`, `chat`, `notification`, `deal` and shared `platform`. The marketplace module currently implements the HLD’s discovery, buying/watchlist and selling/publication responsibilities. Follow the existing four layers: API controllers/DTOs/mappers/error handlers, services, pure domain models/errors, and infrastructure adapters/repositories. Keep SQL and Redis operations out of controllers.
+One Kotlin/Spring Boot application runs on JDK 21. Source modules under `backend/src/main/kotlin/com/tolmol` are `user`, `marketplace`, `bidding`, `chat`, `notification`, `deal` and shared `platform`. The marketplace module currently implements the HLD’s discovery, buying/watchlist and selling/publication responsibilities. Follow the existing four layers: API controllers/DTOs/mappers/error handlers, services, pure domain models/errors, and infrastructure adapters/repositories. Keep SQL and Redis operations out of controllers.
 
 | Owner | Durable data and delivery |
 |---|---|
@@ -34,7 +36,7 @@ One Kotlin/Spring Boot application runs on JDK 21. Source modules under `src/mai
 | Marketplace DB | Listings, watchers, bids, awards, deals, alerts, read/delivery state, mute preferences and the marketplace outbox. Redis GEO selects nearby candidates. Exact distance and auction state determine visibility. Versioned Redis snapshots hold current auction state. |
 | Chat DB | Threads, participants represented by buyer/seller IDs, messages and the chat outbox. Redis caches the latest 50 messages per thread version. |
 
-Bid commands use REST. The authenticated `/ws` connection accepts `auction.subscribe`, `auction.unsubscribe`, `nearby.subscribe`, `nearby.unsubscribe` and `chat.send`. Committed auction and deal events go to Kafka topic `auction.events`; committed messages go to `chat.message`. The notification consumer routes events and creates inbox entries. Chat text is excluded from the durable alert inbox. Flyway migrations are under `src/main/resources/db/{users,location,marketplace,chat}`.
+Bid commands use REST. The authenticated `/ws` connection accepts `auction.subscribe`, `auction.unsubscribe`, `nearby.subscribe`, `nearby.unsubscribe` and `chat.send`. Committed auction and deal events go to Kafka topic `auction.events`; committed messages go to `chat.message`. The notification consumer routes events and creates inbox entries. Chat text is excluded from the durable alert inbox. Flyway migrations are under `backend/src/main/resources/db/{users,location,marketplace,chat}`.
 
 ## Remaining manual checks and scope
 
@@ -45,6 +47,6 @@ Bid commands use REST. The authenticated `/ws` connection accepts `auction.subsc
 ## Validation and working agreement
 
 - The last full build at the baseline passed **18 tests with zero failures, errors or skips**. Coverage includes a REST journey through pickup, location and watchlist behavior, bid ordering and cooldowns, deadline awards, authenticated WebSocket chat, Kafka notification routing, negotiated settlement and corrected-weight relisting. The packaged app also returned `UP` from `GET /health` against local Compose. These are historical results for the stated commit.
-- From the repo root, start Docker Desktop with Linux containers, use the README to create the ignored local `.env`, run `docker compose up -d`, then `.\gradlew.bat bootRun`. The local API listens on port 8080. Tests start separate disposable PostgreSQL, Redis and Kafka containers.
+- From `backend/`, start Docker Desktop with Linux containers, use the README to create the ignored local `.env`, run `docker compose up -d`, then `.\gradlew.bat bootRun`. The local API listens on port 8080. Tests start separate disposable PostgreSQL, Redis and Kafka containers.
 - Run the relevant test class while iterating, then `.\gradlew.bat build` at the milestone boundary. Add focused regression tests for simultaneous competing bids and concurrent award/expiry when changing those transactions. LifecycleTest also covers competing offers, concurrent expiry and seller acceptance, and subscription races.
 - Preserve the fixed stack, four database owners and package boundaries. Record new backend decisions in `docs/DECISIONS.md`, update endpoint documentation with behavior changes, and commit and push completed milestones to `main`. Real payment processing, advanced production hardening and mobile implementation were outside the agreed MVP.
