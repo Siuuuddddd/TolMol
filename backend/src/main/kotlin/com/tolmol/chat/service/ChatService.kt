@@ -27,16 +27,22 @@ class ChatService(private val store: ChatStore,private val market: MarketplaceSe
         if (user!=thread.seller && user!=thread.buyer) throw ConversationUnavailableException()
         return thread
     }
-    fun send(user: UUID,id: UUID,body: String,clientId: UUID): Message {
-        require(body.isNotBlank() && body.length<=4000) { "Message must contain 1–4000 characters" }
-        val thread = participant(user,id)
+    fun details(user: UUID, id: UUID): Pair<Conversation, Boolean> {
+        val thread = participant(user, id)
+        return thread to writable(thread)
+    }
+    private fun writable(thread: Conversation): Boolean {
         val lot = market.listing(thread.listing)
-        val writable = when (lot.status) {
+        return when (lot.status) {
             "OPEN" -> Instant.now()<lot.deadline
             "AWARDED" -> bidding.winningBuyer(lot.id)==thread.buyer
             else -> false
         }
-        if (!writable) throw ChatClosedException()
+    }
+    fun send(user: UUID,id: UUID,body: String,clientId: UUID): Message {
+        require(body.isNotBlank() && body.length<=4000) { "Message must contain 1–4000 characters" }
+        val thread = participant(user,id)
+        if (!writable(thread)) throw ChatClosedException()
         return store.send(thread,user,body.trim(),clientId)
     }
     fun history(user: UUID,id: UUID,after: Long?): List<Message> {

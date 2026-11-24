@@ -38,6 +38,8 @@ class ChatTest : SocketFixture() {
         val seller = user(Role.SELLER)
         val buyer = user(Role.BUYER)
         val thread = chat.open(buyer,lot(seller).id)
+        assertTrue(chat.details(seller, thread.id).second)
+        assertThrows(ConversationUnavailableException::class.java) { chat.details(UUID.randomUUID(), thread.id) }
         val inbox = LinkedBlockingQueue<JsonNode>()
         val socket = connect(buyer,inbox)
         try {

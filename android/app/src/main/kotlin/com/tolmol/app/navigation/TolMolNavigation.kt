@@ -21,6 +21,7 @@ import com.tolmol.app.feature.discovery.presentation.*
 import com.tolmol.app.feature.bidding.presentation.*
 import com.tolmol.app.feature.listing.presentation.*
 
+import com.tolmol.app.feature.chat.presentation.*
 
 @Serializable data class Home(val tab: String) : NavKey
 @Serializable data class AuctionRoute(val id: String, val category: String, val weight: String, val opening: String, val deadline: String) : NavKey
@@ -50,7 +51,7 @@ fun TolMolNavigation(auth: AuthViewModel = hiltViewModel()) {
 
 @Composable
 private fun MarketplaceNavigation(account: Account, role: Role, changeRole: () -> Unit, logout: () -> Unit) {
-    val tabs = if (role == Role.BUYER) listOf("Discover", "Bids") else listOf("Listings")
+    val tabs = if (role == Role.BUYER) listOf("Discover", "Bids", "Chat") else listOf("Listings", "Chat")
     val stack = rememberNavBackStack(Home(tabs.first()))
     val back = { if (stack.size > 1) stack.removeAt(stack.lastIndex); Unit }
     var location by remember { mutableStateOf<Instant?>(null) }
@@ -85,7 +86,7 @@ private fun MarketplaceNavigation(account: Account, role: Role, changeRole: () -
                             "Listings" -> MyListingsScreen(hiltViewModel(), { stack.add(PublishRoute) }) {
                                 stack.add(OffersRoute(it.id, it.category, it.status, it.deadline))
                             }
-
+                            "Chat" -> ConversationsScreen(hiltViewModel(), account.id, null) { stack.add(ChatRoute(it.id)) }
 
 
                             else -> Screen("TolMol") { Text("Signed in as ${role.name.lowercase()}") }
@@ -93,16 +94,26 @@ private fun MarketplaceNavigation(account: Account, role: Role, changeRole: () -
                     }
                     entry<AuctionRoute> { lot ->
                         BiddingScreen(hiltViewModel(), lot.id, lot.category, lot.weight, lot.opening, lot.deadline,
-                            null,
+                            { stack.add(OpenChatRoute(lot.id)) },
                             null)
                     }
                     entry<PublishRoute> { PublishScreen(hiltViewModel(), back) }
                     entry<OffersRoute> { lot ->
                         OffersScreen(hiltViewModel(), lot.id, lot.category, lot.status, lot.deadline,
-                            null,
+                            { stack.add(ConversationsRoute(lot.id)) },
                             null)
                     }
-
+                    entry<ConversationsRoute> { route ->
+                        ConversationsScreen(hiltViewModel(), account.id, route.listing) { stack.add(ChatRoute(it.id)) }
+                    }
+                    entry<ChatRoute> { ChatThreadScreen(hiltViewModel(), it.id, account.id) }
+                    entry<OpenChatRoute> { route ->
+                        val vm: OpenChatViewModel = hiltViewModel()
+                        val state by vm.state.collectAsStateWithLifecycle()
+                        LaunchedEffect(route.listing) { vm.open(route.listing) }
+                        LaunchedEffect(state.value) { state.value?.let { stack[stack.lastIndex] = ChatRoute(it.id) } }
+                        Screen("Opening conversation") { ScreenFeedback(state) { vm.open(route.listing) } }
+                    }
 
                 },
             )
