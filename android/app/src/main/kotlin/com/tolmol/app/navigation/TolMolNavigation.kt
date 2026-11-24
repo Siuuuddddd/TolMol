@@ -22,6 +22,7 @@ import com.tolmol.app.feature.bidding.presentation.*
 import com.tolmol.app.feature.listing.presentation.*
 
 import com.tolmol.app.feature.chat.presentation.*
+import com.tolmol.app.feature.notification.presentation.*
 
 @Serializable data class Home(val tab: String) : NavKey
 @Serializable data class AuctionRoute(val id: String, val category: String, val weight: String, val opening: String, val deadline: String) : NavKey
@@ -51,7 +52,7 @@ fun TolMolNavigation(auth: AuthViewModel = hiltViewModel()) {
 
 @Composable
 private fun MarketplaceNavigation(account: Account, role: Role, changeRole: () -> Unit, logout: () -> Unit) {
-    val tabs = if (role == Role.BUYER) listOf("Discover", "Bids", "Chat") else listOf("Listings", "Chat")
+    val tabs = if (role == Role.BUYER) listOf("Discover", "Bids", "Chat", "Alerts") else listOf("Listings", "Chat", "Alerts")
     val stack = rememberNavBackStack(Home(tabs.first()))
     val back = { if (stack.size > 1) stack.removeAt(stack.lastIndex); Unit }
     var location by remember { mutableStateOf<Instant?>(null) }
@@ -87,7 +88,7 @@ private fun MarketplaceNavigation(account: Account, role: Role, changeRole: () -
                                 stack.add(OffersRoute(it.id, it.category, it.status, it.deadline))
                             }
                             "Chat" -> ConversationsScreen(hiltViewModel(), account.id, null) { stack.add(ChatRoute(it.id)) }
-
+                            "Alerts" -> InboxScreen(hiltViewModel())
 
                             else -> Screen("TolMol") { Text("Signed in as ${role.name.lowercase()}") }
                         }
