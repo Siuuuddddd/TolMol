@@ -24,6 +24,7 @@ class AuthService(private val store: UserStore, private val encoder: PasswordEnc
         if (!encoder.matches(password,account?.passwordHash ?: dummyHash) || account == null) throw InvalidCredentialsException()
         return issuer.issue(account.id)
     }
+    fun roles(id: UUID): Set<Role> = Role.entries.filter { store.hasRole(id, it) }.toSet()
     fun requireRole(id: UUID,role: Role) { if (!store.hasRole(id,role)) throw RoleRequiredException() }
     fun locate(id: UUID,role: Role,position: Position) {
         requireRole(id,role)

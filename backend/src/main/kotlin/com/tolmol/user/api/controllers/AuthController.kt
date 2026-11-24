@@ -16,6 +16,11 @@ class AuthController(private val auth: AuthService) {
     fun register(@RequestBody req: RegisterRequest) = mapOf("id" to auth.register(req.email,req.password,req.roles))
     @PostMapping("/auth/login")
     fun login(@RequestBody req: LoginRequest) = mapOf("accessToken" to auth.login(req.email,req.password))
+    @GetMapping("/me")
+    fun profile(p: Principal): ProfileDto {
+        val id = UUID.fromString(p.name)
+        return ProfileDto(id, auth.roles(id))
+    }
     @PutMapping("/me/location/{role}") @ResponseStatus(HttpStatus.NO_CONTENT)
     fun locate(p: Principal,@PathVariable role: Role,@RequestBody req: LocationRequest) =
         auth.locate(UUID.fromString(p.name),role,req.toDomain())

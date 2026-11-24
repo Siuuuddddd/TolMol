@@ -28,6 +28,7 @@ Send JSON bodies and use `Authorization: Bearer <accessToken>` on authenticated 
 | Endpoint | Purpose |
 |---|---|
 | `POST /api/auth/register`, `POST /api/auth/login` | Register with email, password and roles such as `["SELLER","BUYER"]`. Login with email and password for a token. |
+| `GET /api/me` | Current account ID and available roles. |
 | `PUT /api/me/location/{BUYER or SELLER}` | Set latitude and longitude for that role. Refresh within 15 minutes before publishing, browsing or bidding. |
 | `POST /api/listings` | Publish with category, weight, startingRate and deadline. Uses the seller’s stored location. |
 | `GET /api/listings`, `GET /api/listings/watchlist` | Nearby open lots and nearby watched lots. |

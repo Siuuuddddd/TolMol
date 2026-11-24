@@ -25,3 +25,7 @@
 - Each platform token belongs to one owner in Users DB. Cross-account reassignment is rejected until removal. Enabled adapters send a generic notification and event identifiers. Real-device acceptance needs the corresponding credentials.
 - Muted events remain available in the owner’s inbox. Chat and listing mutes suppress both socket and push dispatch; listing mutes also suppress transient discovery/auction updates.
 - The optional Compose app profile packages a host-built bootJar with a Java 21 runtime. Flyway migrates the four provisioned databases during startup; TLS terminates at the external reverse proxy.
+
+## Android client
+
+- The app restores the DataStore JWT and loads roles from the authenticated GET /api/me endpoint. The local session ends at token expiry or when a protected request rejects it.
