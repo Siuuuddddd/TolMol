@@ -1,10 +1,10 @@
 # TolMol backend handoff
 
-The backend lives in `backend/`. The separate Android project uses `android/`.
+The backend lives in `backend/`. The Android project lives in `android/` and is described in [ANDROID-HANDOFF.md](ANDROID-HANDOFF.md).
 
-**Baseline:** [`main` at `ecc1de9`](https://github.com/Siuuuddddd/TolMol/tree/ecc1de9). The original MVP and all seven backend follow-up items shipped. Continue from the current checkout after comparing it with this baseline. This handoff covers backend development only. Mobile development is deferred.
+**Baseline**. The original MVP and all seven backend follow-up items shipped by [`ecc1de9`](https://github.com/Siuuuddddd/TolMol/tree/ecc1de9). The current backend also exposes the authenticated account and role profile, bid-history status, and participant-only conversation writability used by the Android client.
 
-The [PRD](https://github.com/Siuuuddddd/TolMol/blob/ecc1de9/docs/PRD.md) owns product behavior. [DECISIONS.md](https://github.com/Siuuuddddd/TolMol/blob/ecc1de9/docs/DECISIONS.md) explains implementation choices. The [README](https://github.com/Siuuuddddd/TolMol/blob/ecc1de9/README.md) contains local setup, endpoint paths, request fields and WebSocket examples. The remaining manual checks are listed below.
+The [PRD](docs/PRD.md) owns product behavior. [DECISIONS.md](docs/DECISIONS.md) explains implementation choices. The [README](README.md) contains local setup, endpoint paths, request fields and WebSocket examples.
 
 ## What works today
 

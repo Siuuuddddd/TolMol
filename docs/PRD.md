@@ -4,7 +4,7 @@
 
 ## Purpose and scope
 
-TolMol connects people selling scrap with buyers who can collect it locally. A seller publishes a lot, nearby buyers ask questions and bid, and one buyer wins. The backend supports this journey through discovery, identity, listings, bidding, chat, watchlists and notifications. The mobile app consumes the APIs and WebSocket connections. Frontend implementation is deferred.
+TolMol connects people selling scrap with buyers who can collect it locally. A seller publishes a lot, nearby buyers ask questions and bid, and one buyer wins. The backend supports this journey through discovery, identity, listings, bidding, chat, watchlists and notifications. The mobile app consumes the APIs and WebSocket connections. The Android client lives in the repository under android/.
 
 ## Marketplace rules
 

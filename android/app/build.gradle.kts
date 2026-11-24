@@ -1,3 +1,5 @@
+import java.net.URI
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose)
@@ -9,6 +11,15 @@ plugins {
 fun endpoint(property: String, fallback: String): String {
     val value = providers.gradleProperty(property).orElse(fallback).get()
     require(value.none { it == '"' || it == '\\' || it.isWhitespace() }) { "Invalid URL for $property" }
+    val uri = URI.create(value)
+    val schemes = when (property) {
+        "tolmolDebugRestUrl" -> setOf("http", "https")
+        "tolmolDebugSocketUrl" -> setOf("ws", "wss")
+        "tolmolReleaseRestUrl" -> setOf("https")
+        else -> setOf("wss")
+    }
+    require(uri.scheme in schemes && uri.host != null && uri.userInfo == null) { "Invalid URL for $property" }
+    if (property.endsWith("RestUrl")) require(value.endsWith('/')) { "$property must end in /" }
     return "\"$value\""
 }
 

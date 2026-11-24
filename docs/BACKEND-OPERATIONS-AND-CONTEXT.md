@@ -9,7 +9,7 @@
 | Product rules | [docs/PRD.md](https://github.com/Siuuuddddd/TolMol/blob/8ae067f/docs/PRD.md) |
 | Reasons behind implementation choices | [docs/DECISIONS.md](https://github.com/Siuuuddddd/TolMol/blob/8ae067f/docs/DECISIONS.md) |
 | Run commands, endpoints, payloads, deployment | [README.md](https://github.com/Siuuuddddd/TolMol/blob/8ae067f/README.md) |
-| Feature inventory and manual checks | [docs/BACKEND-HANDOFF.md](https://github.com/Siuuuddddd/TolMol/blob/8ae067f/docs/BACKEND-HANDOFF.md) |
+| Feature inventory and manual checks | [Backend handoff](../BACKEND-HANDOFF.md) |
 
 ## Start with one sale
 

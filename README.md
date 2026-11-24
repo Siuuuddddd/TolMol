@@ -21,6 +21,22 @@ The API listens on `http://localhost:8080`. Check `GET /health`. Flyway migrates
 
 Run `.\gradlew.bat build` for the full build and integration tests. Tests use their own disposable PostgreSQL, Redis and Kafka containers. On macOS or Linux, create the same two variables in a local `.env` file and use `./gradlew`.
 
+## Android
+
+1. Start the backend from `backend/` as above. Check that `http://localhost:8080/health` reports `UP`.
+2. Open `android/` in Android Studio and sync. Use JDK 21 and install Android SDK 37 from SDK Manager if prompted. Run the **app** configuration on an emulator with Google Play services. The reference device is Pixel 9 Pro.
+3. In the emulator's **Extended controls → Location**, set and send a point. Choose a role in TolMol and allow location. A buyer and a seller must be separate accounts to test bidding on the seller's lot.
+4. Emulator debug builds resolve the host at `10.0.2.2:8080`. For a physical device on the same network, add the following to your user Gradle properties (`~/.gradle/gradle.properties`), using your computer's reachable LAN IP, then sync and rebuild.
+
+   ```properties
+   tolmolDebugRestUrl=http://192.168.1.20:8080/
+   tolmolDebugSocketUrl=ws://192.168.1.20:8080/ws
+   ```
+
+   On Android 17, grant the debug app local-network permission when prompted. Release builds require HTTPS and WSS. Set `tolmolReleaseRestUrl` and `tolmolReleaseSocketUrl` to your hosted backend.
+
+From `android/`, run `./gradlew assembleDebug testDebugUnitTest` or `.\gradlew.bat assembleDebug testDebugUnitTest` on Windows.
+
 ## REST API
 
 Send JSON bodies and use `Authorization: Bearer <accessToken>` on authenticated requests. Currency fields are decimal rupees, rates are rupees per kilogram, weights are kilograms, deadlines are ISO-8601 instants, and IDs are UUIDs except the numeric chat message cursor.
@@ -37,6 +53,7 @@ Send JSON bodies and use `Authorization: Bearer <accessToken>` on authenticated 
 | `GET /api/listings/{id}/auction`, `GET /api/listings/{id}/bids` | Read the auction snapshot or, as seller, the list of offers. |
 | `POST /api/listings/{id}/accept` | Seller awards a recorded `bidId`. At the deadline the backend awards the highest bid automatically, or expires an empty auction. |
 | `POST /api/listings/{id}/chat` | Buyer opens or retrieves their thread with the seller. Returns the thread ID. |
+| `GET /api/chat/{threadId}` | Participant-only thread details with current writable state. |
 | `GET /api/chat/{threadId}/messages` | Latest 50 messages. Supply `?after=0` to start from the oldest, then pass the last message ID for the next page. |
 | `GET /api/notifications` | Current user’s alerts, newest first, with cursor pagination and read state. |
 | `GET /api/deals`, `GET /api/deals/{listingId}` | Participant-only deal details including pickup coordinates and current revision. |
@@ -58,7 +75,7 @@ Connect to `ws://localhost:8080/ws` with the bearer header on the HTTP upgrade. 
 ```
 
 Commands return `ack` with data or `error` with a status. Incoming events contain `eventId`, `type`, `aggregate` and `data`. Deduplicate by event ID. After reconnecting, resubscribe and fetch the latest auction snapshot, chat history or alert inbox. Offline push defaults to logging and supports configured FCM/APNs delivery. Payment confirmation records an agreement between participants and does not transfer funds.
-Personal history: GET /api/me/listings, /api/me/bids and /api/me/conversations. Pass limit (1–100, default 25) and after (last returned UUID) until an empty page.
+Personal history: GET /api/me/listings, /api/me/bids and /api/me/conversations. Pass limit (1–100, default 25) and after (last returned UUID) until an empty page. Buyer bid history includes `status`.
 On /ws, auction.unsubscribe accepts listingId and returns an ack. Subscribe returns a versioned snapshot before subsequent transient events. Reconnect with a new bearer token when the JWT expires.
 Alerts are durable before delivery. On replay, incomplete deliveries are retried with the same eventId; deduplicate live events by that ID.
 On /ws, nearby.subscribe returns the current nearby feed as its ack. listing.available and listing.unavailable stream changes while subscribed. Use nearby.unsubscribe to stop. GET /api/listings remains the reconnect path.

@@ -56,19 +56,3 @@ fun AuthForm(state: AuthUiState, register: Boolean, viewModel: AuthViewModel, to
         if (state.error != null) TextButton(onClick = { viewModel.restore() }) { Text("Retry saved session") }
     }
 }
-
-@Composable
-fun RolePicker(state: AuthUiState, onSelect: (Role) -> Unit, onLogout: () -> Unit) {
-    Column(Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("TolMol", style = MaterialTheme.typography.displaySmall, color = MaterialTheme.colorScheme.primary)
-        Text("What brings you here?", style = MaterialTheme.typography.headlineSmall)
-        if (Role.SELLER in state.account?.roles.orEmpty()) {
-            Button({ onSelect(Role.SELLER) }, Modifier.fillMaxWidth()) { Text("Sell scrap") }
-        }
-        if (Role.BUYER in state.account?.roles.orEmpty()) {
-            Button({ onSelect(Role.BUYER) }, Modifier.fillMaxWidth()) { Text("Buy scrap nearby") }
-        }
-        Text("Your roles: ${state.account?.roles.orEmpty().joinToString { it.name.lowercase() }}")
-        TextButton(onLogout) { Text("Sign out") }
-    }
-}

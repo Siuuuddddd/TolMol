@@ -25,7 +25,12 @@ import com.tolmol.app.feature.chat.presentation.*
 import com.tolmol.app.feature.notification.presentation.*
 import com.tolmol.app.feature.deal.presentation.*
 
-@Serializable data class Home(val tab: String) : NavKey
+@Serializable
+enum class MarketplaceTab(val title: String) {
+    DISCOVER("Discover"), LISTINGS("Listings"), BIDS("Bids"), CHAT("Chat"), ALERTS("Alerts"), DEALS("Deals")
+}
+
+@Serializable data class Home(val tab: MarketplaceTab) : NavKey
 @Serializable data class AuctionRoute(val id: String, val category: String, val weight: String, val opening: String, val deadline: String) : NavKey
 @Serializable data object PublishRoute : NavKey
 @Serializable data class OffersRoute(val id: String, val category: String, val status: String, val deadline: String) : NavKey
@@ -38,10 +43,22 @@ import com.tolmol.app.feature.deal.presentation.*
 fun TolMolNavigation(auth: AuthViewModel = hiltViewModel()) {
     val state by auth.state.collectAsStateWithLifecycle()
     var register by rememberSaveable { mutableStateOf(false) }
+    var showForm by rememberSaveable { mutableStateOf(false) }
     val role = state.role
     val account = state.account
-    Box(Modifier.fillMaxSize().safeDrawingPadding()) {
+    LaunchedEffect(account?.id) {
+        if (account != null) {
+            register = false
+            showForm = true
+        }
+    }
+    Box(Modifier.fillMaxSize().safeDrawingPadding().imePadding()) {
         when {
+            account == null && state.loading && !showForm -> CircularProgressIndicator(Modifier.padding(24.dp))
+            account == null && !showForm && state.error == null -> WelcomeScreen(
+                signIn = { register = false; showForm = true },
+                register = { register = true; showForm = true },
+            )
             account == null -> AuthForm(state, register, auth) { register = !register }
             role == null -> RolePicker(state, auth::select, { auth.logout() })
             else -> key(account.id, role) {
@@ -53,7 +70,9 @@ fun TolMolNavigation(auth: AuthViewModel = hiltViewModel()) {
 
 @Composable
 private fun MarketplaceNavigation(account: Account, role: Role, changeRole: () -> Unit, logout: () -> Unit) {
-    val tabs = if (role == Role.BUYER) listOf("Discover", "Bids", "Chat", "Alerts", "Deals") else listOf("Listings", "Chat", "Alerts", "Deals")
+    val sharedTabs = listOf(MarketplaceTab.CHAT, MarketplaceTab.ALERTS, MarketplaceTab.DEALS)
+    val tabs = (if (role == Role.BUYER) listOf(MarketplaceTab.DISCOVER, MarketplaceTab.BIDS)
+        else listOf(MarketplaceTab.LISTINGS)) + sharedTabs
     val stack = rememberNavBackStack(Home(tabs.first()))
     val back = { if (stack.size > 1) stack.removeAt(stack.lastIndex); Unit }
     var location by remember { mutableStateOf<Instant?>(null) }
@@ -62,7 +81,7 @@ private fun MarketplaceNavigation(account: Account, role: Role, changeRole: () -
             for (tab in tabs) {
                 NavigationBarItem(selected = (stack.lastOrNull() as? Home)?.tab == tab,
                     onClick = { stack[0] = Home(tab) },
-                    icon = { Text(tab.take(1)) }, label = { Text(tab) })
+                    icon = { Text(tab.title.take(1)) }, label = { Text(tab.title) })
             }
         }
     }) { padding ->
@@ -81,17 +100,16 @@ private fun MarketplaceNavigation(account: Account, role: Role, changeRole: () -
                 entryProvider = entryProvider {
                     entry<Home> { route ->
                         when (route.tab) {
-                            "Discover" -> DiscoveryScreen(hiltViewModel(), location) { lot ->
+                            MarketplaceTab.DISCOVER -> DiscoveryScreen(hiltViewModel(), location) { lot ->
                                 stack.add(AuctionRoute(lot.id, lot.category, lot.weight.toPlainString(), lot.startingRate.toPlainString(), lot.deadline))
                             }
-                            "Bids" -> MyBidsScreen(hiltViewModel()) { stack.add(DealRoute(it)) }
-                            "Listings" -> MyListingsScreen(hiltViewModel(), { stack.add(PublishRoute) }) {
+                            MarketplaceTab.BIDS -> MyBidsScreen(hiltViewModel()) { stack.add(DealRoute(it)) }
+                            MarketplaceTab.LISTINGS -> MyListingsScreen(hiltViewModel(), { stack.add(PublishRoute) }) {
                                 stack.add(OffersRoute(it.id, it.category, it.status, it.deadline))
                             }
-                            "Chat" -> ConversationsScreen(hiltViewModel(), account.id, null) { stack.add(ChatRoute(it.id)) }
-                            "Alerts" -> InboxScreen(hiltViewModel())
-                            "Deals" -> DealsScreen(hiltViewModel(), account.id, role == Role.SELLER) { stack.add(DealRoute(it)) }
-                            else -> Screen("TolMol") { Text("Signed in as ${role.name.lowercase()}") }
+                            MarketplaceTab.CHAT -> ConversationsScreen(hiltViewModel(), account.id, null) { stack.add(ChatRoute(it.id)) }
+                            MarketplaceTab.ALERTS -> InboxScreen(hiltViewModel())
+                            MarketplaceTab.DEALS -> DealsScreen(hiltViewModel(), account.id, role == Role.SELLER) { stack.add(DealRoute(it)) }
                         }
                     }
                     entry<AuctionRoute> { lot ->

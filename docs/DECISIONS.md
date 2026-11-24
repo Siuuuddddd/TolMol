@@ -31,3 +31,7 @@
 - The app restores the DataStore JWT and loads roles from the authenticated GET /api/me endpoint. The local session ends at token expiry or when a protected request rejects it.
 - Buyer bid history returns a status from the authoritative listing and winning bid, while preserving UUID pagination and account scoping.
 - GET /api/chat/{id} exposes the participant-only conversation and its current writable state. It shares the authorization and writable predicate used by chat.send.
+- Android uses SDK 37 with a minimum of 26. Debug builds allow local emulator traffic and request local-network access on Android 17. Release URLs require TLS.
+- Location is sent for the active role on foreground entry and every five minutes while active. Screen reads remain subject to the server freshness check.
+- Live updates use one bearer-authenticated WebSocket. The client serializes commands because the server replies lack correlation IDs. Reconnection reloads current state and renews the active auction subscription.
+- The Pixel 9 Pro onboarding uses the Scrap Conveyor palette and original artwork. Native Compose text and controls support Android font scaling.
