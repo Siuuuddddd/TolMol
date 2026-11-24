@@ -18,6 +18,7 @@ import com.tolmol.app.feature.auth.domain.*
 import com.tolmol.app.feature.auth.presentation.*
 import com.tolmol.app.feature.location.presentation.*
 import com.tolmol.app.feature.discovery.presentation.*
+import com.tolmol.app.feature.bidding.presentation.*
 
 @Serializable data class Home(val tab: String) : NavKey
 @Serializable data class AuctionRoute(val id: String, val category: String, val weight: String, val opening: String, val deadline: String) : NavKey
@@ -76,7 +77,7 @@ private fun MarketplaceNavigation(account: Account, role: Role, changeRole: () -
                     entry<Home> { route ->
                         when (route.tab) {
                             "Discover" -> DiscoveryScreen(hiltViewModel(), location) { lot ->
-                                Unit
+                                stack.add(AuctionRoute(lot.id, lot.category, lot.weight.toPlainString(), lot.startingRate.toPlainString(), lot.deadline))
                             }
 
 
@@ -86,7 +87,11 @@ private fun MarketplaceNavigation(account: Account, role: Role, changeRole: () -
                             else -> Screen("TolMol") { Text("Signed in as ${role.name.lowercase()}") }
                         }
                     }
-
+                    entry<AuctionRoute> { lot ->
+                        BiddingScreen(hiltViewModel(), lot.id, lot.category, lot.weight, lot.opening, lot.deadline,
+                            null,
+                            null)
+                    }
 
 
 
