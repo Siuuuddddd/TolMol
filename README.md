@@ -35,6 +35,8 @@ Run `.\gradlew.bat build` for the full build and integration tests. Tests use th
 
    On Android 17, grant the debug app local-network permission when prompted. Release builds require HTTPS and WSS. Set `tolmolReleaseRestUrl` and `tolmolReleaseSocketUrl` to your hosted backend.
 
+If an earlier import reports **Invalid Gradle JDK configuration**, select **Use Embedded JDK** in the sync result and sync again.
+
 From `android/`, run `./gradlew assembleDebug testDebugUnitTest` or `.\gradlew.bat assembleDebug testDebugUnitTest` on Windows. The unit suite includes Koin module verification.
 
 ## REST API
