@@ -1,0 +1,39 @@
+package com.tolmol.app.feature.listing.data
+import com.tolmol.app.feature.listing.domain.*
+import com.tolmol.app.core.network.serverMessage
+import com.tolmol.app.core.websocket.LiveSocket
+import kotlinx.coroutines.CancellationException
+import kotlinx.serialization.json.*
+import retrofit2.Retrofit
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+import java.math.BigDecimal
+
+class ListingRepositoryImpl(private val api: ListingApi) : ListingRepository {
+    override suspend fun mine(after: String?) = request { api.mine(after).map { it.toDomain() } }
+    override suspend fun publish(category: String, weight: BigDecimal, startingRate: BigDecimal, deadline: String) = request {
+        api.publish(buildJsonObject {
+            put("category", category)
+            put("weight", JsonPrimitive(weight))
+            put("startingRate", JsonPrimitive(startingRate))
+            put("deadline", deadline)
+        }).toDomain()
+    }
+    override suspend fun offers(id: String) = request { api.offers(id).map { Offer(it.id, it.buyer, it.rate.content.toBigDecimal(), it.createdAt) } }
+    override suspend fun accept(id: String, bidId: String) = request { api.accept(id, AwardDto(bidId)) }
+
+    private fun ListingDto.toDomain() = Listing(id, category, weight.content.toBigDecimal(), startingRate.content.toBigDecimal(), deadline, status)
+
+    private suspend fun <T> request(action: suspend () -> T): T = try { action() }
+    catch (error: CancellationException) { throw error }
+    catch (error: Exception) { throw ListingError.RequestFailed(error.serverMessage()) }
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+object ListingModule {
+    @Provides fun useCase(retrofit: Retrofit) =
+        ListingUseCase(ListingRepositoryImpl(retrofit.create(ListingApi::class.java)))
+}

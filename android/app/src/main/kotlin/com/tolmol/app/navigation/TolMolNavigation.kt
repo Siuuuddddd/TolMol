@@ -19,6 +19,7 @@ import com.tolmol.app.feature.auth.presentation.*
 import com.tolmol.app.feature.location.presentation.*
 import com.tolmol.app.feature.discovery.presentation.*
 import com.tolmol.app.feature.bidding.presentation.*
+import com.tolmol.app.feature.listing.presentation.*
 
 @Serializable data class Home(val tab: String) : NavKey
 @Serializable data class AuctionRoute(val id: String, val category: String, val weight: String, val opening: String, val deadline: String) : NavKey
@@ -48,7 +49,7 @@ fun TolMolNavigation(auth: AuthViewModel = hiltViewModel()) {
 
 @Composable
 private fun MarketplaceNavigation(account: Account, role: Role, changeRole: () -> Unit, logout: () -> Unit) {
-    val tabs = if (role == Role.BUYER) listOf("Discover") else listOf("Seller")
+    val tabs = if (role == Role.BUYER) listOf("Discover") else listOf("Listings")
     val stack = rememberNavBackStack(Home(tabs.first()))
     val back = { if (stack.size > 1) stack.removeAt(stack.lastIndex); Unit }
     var location by remember { mutableStateOf<Instant?>(null) }
@@ -80,7 +81,9 @@ private fun MarketplaceNavigation(account: Account, role: Role, changeRole: () -
                                 stack.add(AuctionRoute(lot.id, lot.category, lot.weight.toPlainString(), lot.startingRate.toPlainString(), lot.deadline))
                             }
 
-
+                            "Listings" -> MyListingsScreen(hiltViewModel(), { stack.add(PublishRoute) }) {
+                                stack.add(OffersRoute(it.id, it.category, it.status, it.deadline))
+                            }
 
 
 
@@ -92,7 +95,12 @@ private fun MarketplaceNavigation(account: Account, role: Role, changeRole: () -
                             null,
                             null)
                     }
-
+                    entry<PublishRoute> { PublishScreen(hiltViewModel(), back) }
+                    entry<OffersRoute> { lot ->
+                        OffersScreen(hiltViewModel(), lot.id, lot.category, lot.status, lot.deadline,
+                            null,
+                            null)
+                    }
 
 
                 },
