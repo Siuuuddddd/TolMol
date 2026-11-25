@@ -61,8 +61,8 @@ class DemoSeeder(
         Item("Mixed brass fittings","METAL","12","340","scrap_metal_10","Old brass plumbing fittings from a renovation. Rate is per kg after inspection."),
         Item("Used cardboard cartons","CARDBOARD","42","9","scrap_cardboard_01","Empty used cardboard cartons in mixed sizes. Some boxes have tape and printed labels."),
         Item("Flattened corrugated cardboard","CARDBOARD","55","10","scrap_cardboard_02","Flattened cardboard boxes stacked for recycling. Dry storage and easy loading access."),
-        Item("Plastic bottles for recycling","PLASTIC","16","17",null,"Empty mixed plastic bottles from a residential collection. Sorting is required at pickup."),
-        Item("Used plastic storage crates","PLASTIC","32","21",null,"Used plastic storage crates with wear and a few cracked pieces. Sold by total weight."),
+        Item("Plastic bottles for recycling","PLASTIC","16","17","scrap_plastic_01","Empty mixed plastic bottles from a residential collection. Sorting is required at pickup."),
+        Item("Used plastic storage crates","PLASTIC","32","21","scrap_plastic_03","Used plastic storage crates with wear and a few cracked pieces. Sold by total weight."),
         Item("Used blue paint drums","PAINT","75","16","scrap_paint_01","Used blue paint drums, some with residue. Please inspect their condition before reuse or recycling."),
         Item("Empty blue industrial paint drums","PAINT","95","15","scrap_paint_02","Blue industrial paint containers stored indoors. Residue and suitability must be checked at pickup."),
         Item("Leftover paint buckets","PAINT","48","12","scrap_paint_03","Mixed used paint buckets with leftover material. Condition and remaining contents vary."),
@@ -71,13 +71,13 @@ class DemoSeeder(
         Item("Mixed cables and small e-waste","ELECTRONICS","24","45","scrap_electronics_03","Mixed used cables, adapters and small electronic scrap. Sold unsorted for material recovery."),
         Item("Old computer parts and e-waste","ELECTRONICS","46","38","scrap_electronics_04","Mixed old computer components and electronic scrap. Data-bearing parts should be checked by the seller."),
         Item("Old CRT monitors and keyboards","ELECTRONICS","70","18","scrap_electronics_05","Old CRT monitors, keyboards and cables sold as e-waste. Handle glass screens carefully."),
-        Item("Old refrigerator for parts","ELECTRONICS","48","24",null,"Old refrigerator sold for repair or parts. Arrange safe handling of refrigerant and transport."),
-        Item("Used ceiling fans","ELECTRONICS","18","35",null,"Three used ceiling fans from renovation work. Sold as-is for repair or recycling."),
-        Item("Old mixer and small appliances","ELECTRONICS","12","32",null,"Used mixer and assorted small kitchen appliances. Working condition is not guaranteed."),
-        Item("Used two-seat sofa","FURNITURE","42","8",null,"Used fabric sofa with visible wear. Buyer arranges loading and transport."),
-        Item("Old wooden chairs","FURNITURE","28","9",null,"Four old wooden chairs with wear. Inspect joints and condition at pickup."),
-        Item("Used wooden table","FURNITURE","36","10",null,"Used wooden table from an office. Some scratches and wear; sold as-is."),
-        Item("Old wardrobe for reuse","FURNITURE","65","7",null,"Used wooden wardrobe with surface wear. Collection may require disassembly."),
+        Item("Old refrigerator for parts","ELECTRONICS","48","24","scrap_electronics_06","Old refrigerator sold for repair or parts. Arrange safe handling of refrigerant and transport."),
+        Item("Used fans","ELECTRONICS","18","35","scrap_electronics_08","Used ceiling and table fans from renovation work. Sold as-is for repair or recycling."),
+        Item("Old mixer and small appliances","ELECTRONICS","12","32","scrap_electronics_10","Used mixer and assorted small kitchen appliances. Working condition is not guaranteed."),
+        Item("Used sofa","FURNITURE","42","8","scrap_furniture_07","Used sofa with visible wear. Buyer arranges loading and transport."),
+        Item("Old wooden chairs","FURNITURE","28","9","scrap_furniture_01","Four old wooden chairs with wear. Inspect joints and condition at pickup."),
+        Item("Used wooden table","FURNITURE","36","10","scrap_furniture_05","Used wooden table from an office. Some scratches and wear; sold as-is."),
+        Item("Old wardrobe for reuse","FURNITURE","65","7","scrap_furniture_03","Used wardrobe with surface wear. Collection may require disassembly."),
         Item("Mixed textile offcuts","OTHER","25","6","scrap_other_01","Mixed fabric strips and small textile offcuts. Available as an unsorted recycling lot."),
         Item("Colourful fabric remnants","OTHER","40","7","scrap_other_02","Assorted textile remnants in multiple colours. Composition and sizes vary."),
         Item("Surplus cement sacks","OTHER","150","3","scrap_other_03","Stored cement sacks from a building site. Inspect material age and condition; not a paper lot."),
@@ -114,6 +114,10 @@ class DemoSeeder(
                 "scrap_metal_06" -> "scrap_metal_07"
                 "scrap_metal_08" -> "scrap_metal_09"
                 "scrap_metal_10" -> "scrap_metal_11"
+                "scrap_plastic_01" -> "scrap_plastic_02"
+                "scrap_plastic_03" -> "scrap_plastic_04"
+                "scrap_electronics_06" -> "scrap_electronics_07"
+                "scrap_electronics_08" -> "scrap_electronics_09"
                 else -> item.key
             }
             val deadline=now.plusSeconds(if(index<5) 2700L+index*600 else 7200L+(index*4700L)%248400L)
@@ -124,8 +128,8 @@ class DemoSeeder(
                     point.latitude,point.longitude,deadline,"OPEN",0,item.title,item.description,imageKey))
             } else {
                 // Preserve participant activity and terminal states; refresh only still-open demo lots.
-                db.marketplace.sql.sql("update listings set deadline=?,latitude=?,longitude=?,image_key=?,version=version+1 where id=? and status='OPEN'")
-                    .params(Timestamp.from(deadline),point.latitude,point.longitude,imageKey,lotId).update()
+                db.marketplace.sql.sql("update listings set deadline=?,latitude=?,longitude=?,image_key=?,title=?,description=?,version=version+1 where id=? and status='OPEN'")
+                    .params(Timestamp.from(deadline),point.latitude,point.longitude,imageKey,item.title,item.description,lotId).update()
             }
             listings.get(lotId)!!.also { geoIndex.add(it) }
         }

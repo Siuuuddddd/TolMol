@@ -104,3 +104,9 @@ Imported six supplied photos (two iron rods, two copper wire, two aluminium shee
 ### Utensil and brass fitting photos — 2026-11-26
 
 Added four supplied originals and optimized bundled JPEGs, bringing the catalog to 27 photos. scrap_metal_08/09 are assigned to the kitchen utensil lots; scrap_metal_10/11 are assigned to the brass fitting lots. Each supplied photo is used by one corresponding repeated demo lot. Existing OPEN demo lots receive the image keys on startup without a data reset. The importer preserves originals and existing keys, and keeps optimized files within 800px and 120KB.
+
+### Plastic, appliance and furniture photos — 2026-11-26
+
+Added all 18 supplied photos: 4 plastic, 6 electronics and 8 furniture, bringing the bundled catalog to 45 photos. Bottle/crate pairs use plastic keys 01–04; refrigerator/fan/mixer pairs use electronics 06–11; chair/wardrobe/table/sofa pairs use furniture 01–08. All originals are preserved and all optimized images follow the 800px/120KB limits.
+
+Some products have only one open demo lot, so detail now includes a swipeable local two-photo gallery with a page count. The selected feed thumbnail stays first. This uses bundled related-photo keys and needs no image service or backend schema change. Fans and sofa labels were made generic to fit both supplied photos; existing OPEN demo records refresh the seeded content and image keys on startup without resetting bids or deals.

@@ -160,5 +160,113 @@
     "hash": "1CEE4C4DEB2AB0FB486A139A848BAA04C1A490F06B7A3C691E0638CD359629DA",
     "category": "metal",
     "imageKey": "scrap_metal_11"
+  },
+  {
+    "source": "electronics_06_refrigerator_01.png",
+    "hash": "DF92D30C78A4D310EE3CFAEADCE6DAFA0ECD1566AD08D7732242C4D85B68F7E3",
+    "category": "electronics",
+    "imageKey": "scrap_electronics_06"
+  },
+  {
+    "source": "electronics_07_refrigerator_02.png",
+    "hash": "BDF42D592AD91BE9F1FC915BF951B7D1CE333C5ACAC7626834560163A5721BAB",
+    "category": "electronics",
+    "imageKey": "scrap_electronics_07"
+  },
+  {
+    "source": "electronics_08_fans_01.png",
+    "hash": "AAAF7E35249279023BF8F47F5C3E1D23BD5D8178EAA789BDBDFE69B5A1449143",
+    "category": "electronics",
+    "imageKey": "scrap_electronics_08"
+  },
+  {
+    "source": "electronics_09_fans_02.png",
+    "hash": "8C6A3F83AAD489BB535BF6168DC4AE00274EFA6A91FF57F301C842E48ECB43D1",
+    "category": "electronics",
+    "imageKey": "scrap_electronics_09"
+  },
+  {
+    "source": "electronics_10_mixer_01.png",
+    "hash": "741BBCC8726DE9736B529506278817A22E6431EE15CBD1CB83B99BF8E0097565",
+    "category": "electronics",
+    "imageKey": "scrap_electronics_10"
+  },
+  {
+    "source": "electronics_11_mixer_02.png",
+    "hash": "9156D8102984BBE24F86D42F41B62C013AC239ACA847CA4EF37F0F482C4566D6",
+    "category": "electronics",
+    "imageKey": "scrap_electronics_11"
+  },
+  {
+    "source": "furniture_01_chairs_01.png",
+    "hash": "ACE6242ED44DEE89AD8724A7738C2F11C5549BE17A5045DE42CD39051AB597A1",
+    "category": "furniture",
+    "imageKey": "scrap_furniture_01"
+  },
+  {
+    "source": "furniture_02_chairs_02.png",
+    "hash": "77E4F4423560FEF1F4BDD0C9255F00911C92784F2BF3D84A917305A97877A453",
+    "category": "furniture",
+    "imageKey": "scrap_furniture_02"
+  },
+  {
+    "source": "furniture_03_wardrobe_01.png",
+    "hash": "1A52654DB45C4678FE940F805C6B071B99A43900AF9145C082F86E8B4C4BCAF6",
+    "category": "furniture",
+    "imageKey": "scrap_furniture_03"
+  },
+  {
+    "source": "furniture_04_wardrobe_02.png",
+    "hash": "1C0D04686C70768B8B7944C8D54DE6A67BBC8CC3EBD7E873FAB3CB57BD9FFE9D",
+    "category": "furniture",
+    "imageKey": "scrap_furniture_04"
+  },
+  {
+    "source": "furniture_05_tables_01.png",
+    "hash": "9D6BB4BC9386BA3E6AB688C6207F79A3139A6112373651E2DF7E78379DE2EA26",
+    "category": "furniture",
+    "imageKey": "scrap_furniture_05"
+  },
+  {
+    "source": "furniture_06_tables_02.png",
+    "hash": "295F1A123C9C386A0F8B0AECB620ABFFAA8E6C40684AA7E39497B0E8BE35EB07",
+    "category": "furniture",
+    "imageKey": "scrap_furniture_06"
+  },
+  {
+    "source": "furniture_07_sofa_01.png",
+    "hash": "6F053D1D00AF9593041A3BF0AE73004AA93E81F0E69B9C5F8B204A4D6D005226",
+    "category": "furniture",
+    "imageKey": "scrap_furniture_07"
+  },
+  {
+    "source": "furniture_08_sofa_02.png",
+    "hash": "E074CEE6C0A1CCFC74F98ACDCD8E72D361061D326D000A325E3A163BCB683361",
+    "category": "furniture",
+    "imageKey": "scrap_furniture_08"
+  },
+  {
+    "source": "plastic_01_bottles_01.png",
+    "hash": "25D3DF085FACDA4EA526FACFEDEE5D36E161D92BED1842D0A936BBE862A3101A",
+    "category": "plastic",
+    "imageKey": "scrap_plastic_01"
+  },
+  {
+    "source": "plastic_02_bottles_02.png",
+    "hash": "7EFA4193597DD403C0DDB4F1DC0DF53DBB9020F24251174161D4EB3D82495B63",
+    "category": "plastic",
+    "imageKey": "scrap_plastic_02"
+  },
+  {
+    "source": "plastic_03_crates_01.png",
+    "hash": "0FCAE7ACFDDDB0EAAB619841AE5FC75A654B690F1D938FFDA2C42CFFF55D72EE",
+    "category": "plastic",
+    "imageKey": "scrap_plastic_03"
+  },
+  {
+    "source": "plastic_04_crates_02.png",
+    "hash": "23C96126356CD9D2EA8CA4A21F8BB37B10FD99C3841B89506CE476B780F683F8",
+    "category": "plastic",
+    "imageKey": "scrap_plastic_04"
   }
 ]

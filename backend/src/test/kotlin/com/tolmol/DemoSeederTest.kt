@@ -36,6 +36,20 @@ class DemoSeederTest : BackendTest() {
                 "Old steel kitchen utensils","Mixed brass fittings")
         }.map { it.imageKey }.toSet()
         assertEquals((2..11).map { "scrap_metal_%02d".format(it) }.toSet(),materialPhotos)
+        val expectedPhotos=mapOf(
+            "Plastic bottles for recycling" to setOf("scrap_plastic_01","scrap_plastic_02"),
+            "Used plastic storage crates" to setOf("scrap_plastic_03","scrap_plastic_04"),
+            "Old refrigerator for parts" to setOf("scrap_electronics_06"),
+            "Used fans" to setOf("scrap_electronics_08"),
+            "Old mixer and small appliances" to setOf("scrap_electronics_10"),
+            "Old wooden chairs" to setOf("scrap_furniture_01"),
+            "Old wardrobe for reuse" to setOf("scrap_furniture_03"),
+            "Used wooden table" to setOf("scrap_furniture_05"),
+            "Used sofa" to setOf("scrap_furniture_07"))
+        val photoLots=market.feedDetails(buyer).map { it.lot }
+        expectedPhotos.forEach { (title,keys) ->
+            assertEquals(keys,photoLots.filter { it.title==title }.map { it.imageKey }.toSet(),title)
+        }
         assertTrue(market.feedDetails(buyer).map { it.lot.id }.containsAll(demoOpen))
         environment.propertySources.addFirst(org.springframework.core.env.MapPropertySource("moved-demo-center",mapOf(
             "tolmol.seed.center-lat" to 18.5204,"tolmol.seed.center-lng" to 73.8567)))

@@ -99,7 +99,7 @@ fun BiddingScreen(vm: BiddingViewModel, id: String, category: String, weight: St
     val auction = state.value
     Screen(lot?.title ?: category) {
         if(detailState.loading) LinearProgressIndicator(Modifier.fillMaxWidth())
-        ScrapImage(lot?.imageKey,lot?.category ?: category,Modifier.fillMaxWidth().aspectRatio(1.3f).clip(MaterialTheme.shapes.large))
+        ScrapPhotoGallery(lot?.imageKey,lot?.category ?: category,Modifier.fillMaxWidth())
         if(detailState.error!=null) {
             Text(detailState.error!!,color=MaterialTheme.colorScheme.error)
             TextButton({details.refresh(id)}) {Text("Retry details")}
