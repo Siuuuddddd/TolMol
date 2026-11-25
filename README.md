@@ -23,6 +23,8 @@ Run `.\gradlew.bat build` for the full build and integration tests. Tests use th
 
 ## Android
 
+For Windows IDE imports, run `.\setup-workspace.ps1` from the repository root before opening the projects. This restores the backend Gradle link and saves each IDE's local Java home. Reopen an already open project after running the script. Optional `-BackendJavaHome` and `-AndroidJavaHome` arguments support other installation paths.
+
 1. Start the backend from `backend/` as above. Check that `http://localhost:8080/health` reports `UP`.
 2. Open `android/` in Android Studio and sync with its bundled JDK. For command-line builds use JDK 21. Install Android SDK 37 from SDK Manager if prompted. Run the **app** configuration on an emulator with Google Play services. The reference device is Pixel 9 Pro.
 3. In the emulator's **Extended controls → Location**, set and send a point. Choose a role in TolMol and allow location. A buyer and a seller must be separate accounts to test bidding on the seller's lot.

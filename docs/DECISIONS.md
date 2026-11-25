@@ -38,3 +38,4 @@
 - Android starts Koin in the Application and binds feature repositories, use cases, and ViewModels in the Koin application module. Navigation 3 scopes the injected ViewModels to each entry. The JVM unit suite verifies the dependency graph without starting Android.
 - The signed-out welcome screen uses the approved Scrap Conveyor artwork to preserve its lettering and layout. Compose supplies the accessible actions and renders scalable text at larger Android font settings. The seller and buyer actions preselect that role during registration.
 - Android Studio uses its bundled JDK for Gradle sync. Studio-generated daemon JVM criteria are local because pinning a different JDK forced toolchain provisioning during Windows IDE sync.
+- Windows workspace setup repairs the pre-restructure root Gradle link to backend/ and saves separate local Java homes for backend and Android IDE imports. IDE JDK selections use GRADLE_LOCAL_JAVA_HOME to resolve the project configuration.
