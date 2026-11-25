@@ -81,3 +81,18 @@
 
 - Added optional listing title/description/imageKey through the existing layers, plus a buyer-authorized detail endpoint. Public feed/detail include computed distance and seller display name, never pickup coordinates. Legacy category strings and requests remain accepted; new clients use the eight canonical categories. Member-since is nullable for old accounts whose creation date was never recorded. Corrected-weight relisting preserves content fields.
 - The two eBay screenshots are layout references only and are never bundled. All 17 scrap photos are preserved as originals: 2 paper, 2 cardboard, 1 metal, 3 paint, 5 electronics and 4 other (textile offcuts/cement sacks). Drums/buckets are categorized as paint based on the supplied context. No furniture/plastic photo was supplied; original pixel vector category illustrations provide fallbacks. The native Windows JPEG encoder is used because WebP encoding is unavailable; each import is <=800px and <=120KB.
+
+
+### Discovery feed and optional local demo data — 2026-11-26
+
+- Keep the existing category String API for backward compatibility; publish offers the eight MVP categories and the feed groups unknown/legacy categories under OTHER. Search/filter/section composition stays in a domain use case. See all uses a local grid state in Discovery, preserving bottom navigation. Recent views store at most 20 IDs in session memory; no offline database was added.
+- Use 50 OPEN demo lots plus 3 awarded lots (53 total), because the three required deal states cannot also be OPEN. Twenty email-verified accounts have standard BUYER and SELLER roles; 8 mainly sell, 8 mainly buy, 4 do both. Historical bids spread across the last 48 hours, increasing pair timestamps as needed to preserve six-hour cooldown and strict auction chronology. Existing live bid/accept/deal rules are unchanged.
+- Demo seeding requires profile demo or tolmol.seed.demo=true, rejects prod/production, and refreshes open deadlines/locations at startup. Auction expiry waits for ApplicationReadyEvent so startup runners finish restoring deadlines before expiry evaluates them. Normal expiry rules and one-second interval are unchanged.
+- Scoped reset deletes only demo-owned data and refuses mixed ownership bids on unrelated listings. It never flushes Redis or drops databases. Existing demo terminal actions are retained on a normal rerun.
+- Photo count: 17 originals, 17 optimized JPEGs; PAPER 2, CARDBOARD 2, METAL 1, PAINT 3, ELECTRONICS 5, OTHER 4. Textile/cement are OTHER and used drums/buckets are PAINT. PLASTIC and FURNITURE use distinct local vector placeholders. The importer regenerates the stable key lookup; unknown keys also use a category placeholder.
+
+- Demo center changes also update still-open pickup coordinates and Redis GEO members, so rerunning with a new configured city cannot leave lots stranded at the previous center. A regression assertion reseeds in a second city and checks all 50 open lots remain discoverable.
+
+- Emulator testing exposed a Nav3 detail transition retaining a loading effect keyed only by route ID while its ViewModel owner changed. Detail/chat/offer/deal effects now include the ViewModel in their keys; conversation messages and composer were rechecked after rebuilding.
+
+- Public listing DTO distance is rounded to 0.1 km as well as formatted in the app; precise pickup coordinates are exposed only by the existing participant-only deal endpoint.

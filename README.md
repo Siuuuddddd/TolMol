@@ -139,3 +139,36 @@ pwsh -File tools/import_images/import.ps1
 ```
 
 The rerunnable importer keeps a hash manifest and stable image keys, skips previously imported photos, scales the longest side to <=800px and writes JPEGs <=120KB to drawable-nodpi (native WebP encoding is unavailable). Originals are unchanged. Unknown categories map to OTHER. No eBay screenshots, web downloads or network image loader are included. These supplied photos have no recorded license: confirm your right to use them before a public release.
+
+
+## DEMO DATA (local only)
+
+Stop a running backend first. With Docker infrastructure running, start from backend/:
+
+```powershell
+.\gradlew.bat bootRun --args="--spring.profiles.active=demo"
+```
+
+Alternatively pass --tolmol.seed.demo=true. Normal startup does not seed. Never enable demo in production; prod/production profiles reject it. Every demo startup refreshes open auction deadlines and user locations. The seeder is idempotent and keeps existing bids and terminal deals.
+
+Set the emulator location to latitude **19.0760**, longitude **72.8777**, send it, and allow location in TolMol. The optional properties --tolmol.seed.center-lat and --tolmol.seed.center-lng move the cluster (send that same center to the emulator). Demo users are 0.3–7.5 km around the center.
+
+All 20 demo accounts use **Demo@12345**. On the welcome screen choose Create an account, then Already have an account? Sign in to use email/password. These are local email accounts, not Google accounts.
+
+| Login | Main activity |
+| --- | --- |
+| demo.user01@tolmol.demo | Seller: my listings and received bids |
+| demo.user09@tolmol.demo | Buyer: feed, bids, six chats and three deal states |
+| demo.user17@tolmol.demo | Both: switch between buying and selling |
+
+There are 50 open lots plus 3 awarded lots supporting PENDING_PICKUP, WEIGHT_DISPUTE and COMPLETED deals. Thirty open lots have 1–4 bids, with normal minimum increments; historical pair bids respect the six-hour cooldown. All accounts retain the standard buyer and seller roles.
+
+Reset and reseed only demo data (stop the backend before rerunning):
+
+```powershell
+.\gradlew.bat bootRun --args="--spring.profiles.active=demo --tolmol.seed.reset=true"
+```
+
+For removal without reseeding also pass --tolmol.seed.reset-only=true. Reset scopes all deletes and cache cleanup to accounts ending @tolmol.demo and their related data. It refuses deletion if demo bids touch another user's listing. Unrelated accounts and listings are preserved; no database or Redis flush is used. Restart normally afterwards to leave demo disabled.
+
+Discovery uses the supplied scrap photos and TolMol's dark pixel theme. Search matches title, category and description locally; category chips, watchlist hearts, ending-soon sections, section grids and recent views work without a network image service. Recently viewed IDs last for the current app session. Listing details show approximate distance and public seller name/member date; pickup coordinates remain participant-only. Publish supports a title and optional description with category selection; image upload remains outside MVP scope.
