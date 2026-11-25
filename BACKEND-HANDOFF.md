@@ -50,3 +50,10 @@ Bid commands use REST. The authenticated `/ws` connection accepts `auction.subsc
 - From `backend/`, start Docker Desktop with Linux containers, use the README to create the ignored local `.env`, run `docker compose up -d`, then `.\gradlew.bat bootRun`. The local API listens on port 8080. Tests start separate disposable PostgreSQL, Redis and Kafka containers.
 - Run the relevant test class while iterating, then `.\gradlew.bat build` at the milestone boundary. Add focused regression tests for simultaneous competing bids and concurrent award/expiry when changing those transactions. LifecycleTest also covers competing offers, concurrent expiry and seller acceptance, and subscription races.
 - Preserve the fixed stack, four database owners and package boundaries. Record new backend decisions in `docs/DECISIONS.md`, update endpoint documentation with behavior changes, and commit and push completed milestones to `main`. Real payment processing, advanced production hardening and mobile implementation were outside the agreed MVP.
+
+
+## Listing content and optional demo dataset — 2026-11-26
+
+Listing publish/feed/watch/detail now support optional title, description and stable imageKey. GET /api/listings/{id} applies existing seller ownership or buyer freshness/radius eligibility; DTOs expose approximate distance, public seller display name and member date, not pickup coordinates. Existing legacy categories and live business rules are retained. Migrations add nullable listing content and account joined_at.
+
+The demo-only ApplicationRunner seeds 20 verified local accounts, 50 open lots plus 3 deal lots, valid historical bids on 30 open lots, 6 conversations, watches and notifications. It is idempotent, refreshes open deadlines and clustered locations, and rejects production profiles. Reset is ownership-scoped and protects unrelated accounts/listings. Auction scheduling waits until application startup runners complete to prevent expiry racing deadline refresh. README DEMO DATA documents flags, center, credentials and reset.
