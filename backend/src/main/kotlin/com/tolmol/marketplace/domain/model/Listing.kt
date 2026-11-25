@@ -7,7 +7,8 @@ import com.tolmol.user.domain.model.Position
 import kotlin.math.*
 
 data class Listing(val id: UUID,val seller: UUID,val category: String,val weight: BigDecimal,val startingRate: BigDecimal,
-    val latitude: Double,val longitude: Double,val deadline: Instant,val status: String,val version: Long) {
+    val latitude: Double,val longitude: Double,val deadline: Instant,val status: String,val version: Long,
+    val title: String? = null, val description: String? = null, val imageKey: String? = null) {
     fun distanceKm(p: Position): Double {
         val radians = Math.PI / 180
         val a = sin((latitude-p.latitude)*radians/2).pow(2) +
@@ -15,4 +16,4 @@ data class Listing(val id: UUID,val seller: UUID,val category: String,val weight
         return 12742 * asin(sqrt(a.coerceIn(0.0,1.0)))
     }
 }
-data class LotDraft(val category: String,val weight: BigDecimal,val startingRate: BigDecimal,val deadline: Instant)
+data class LotDraft(val category: String,val weight: BigDecimal,val startingRate: BigDecimal,val deadline: Instant, val title: String? = null, val description: String? = null, val imageKey: String? = null)

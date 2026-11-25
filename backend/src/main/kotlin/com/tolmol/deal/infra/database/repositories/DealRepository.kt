@@ -33,8 +33,8 @@ class DealRepository(dbs: Databases) : DealStore {
     }!!
     override fun relist(deal: Deal,weight: BigDecimal): UUID {
         val id = UUID.randomUUID()
-        db.sql.sql("""insert into listings(id,seller,category,weight,starting_rate,latitude,longitude,deadline)
-            select ?,seller,category,?,starting_rate,latitude,longitude,now()+interval '24 hours' from listings where id=?""")
+        db.sql.sql("""insert into listings(id,seller,category,weight,starting_rate,latitude,longitude,deadline,title,description,image_key)
+            select ?,seller,category,?,starting_rate,latitude,longitude,now()+interval '24 hours',title,description,image_key from listings where id=?""")
             .params(id,weight,deal.listing).update()
         return id
     }

@@ -18,8 +18,8 @@ class ListingRepository(db: Databases,private val index: ListingGeoIndex) : List
         and (cast(? as uuid) is null or id>?) order by id limit ?""").params(listOf(user,after,after,limit))
         .query(ListingEntity::class.java).list().map { it.toDomain() }
     override fun insert(listing: Listing) {
-        with(listing) { sql.sql("""insert into listings(id,seller,category,weight,starting_rate,latitude,longitude,deadline)
-            values(?,?,?,?,?,?,?,?)""").params(id,seller,category,weight,startingRate,latitude,longitude,Timestamp.from(deadline)).update() }
+        with(listing) { sql.sql("""insert into listings(id,seller,category,weight,starting_rate,latitude,longitude,deadline,title,description,image_key)
+            values(?,?,?,?,?,?,?,?,?,?,?)""").params(id,seller,category,weight,startingRate,latitude,longitude,Timestamp.from(deadline),title,description,imageKey).update() }
         index.add(listing)
     }
     override fun get(id: UUID) = sql.sql("select * from listings where id=?").param(id)

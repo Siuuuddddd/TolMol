@@ -6,6 +6,7 @@ interface UserStore {
     fun register(account: Account, name: String? = null)
     fun socialAccount(identity: SocialIdentity, passwordHash: String): UUID
     fun googleAccount(identity: GoogleIdentity): UUID
+    fun display(id: UUID): Pair<String,java.time.Instant?>
     fun find(email: String): Account?
     fun hasRole(id: UUID, role: Role): Boolean
     fun savePosition(id: UUID, role: Role, position: Position)

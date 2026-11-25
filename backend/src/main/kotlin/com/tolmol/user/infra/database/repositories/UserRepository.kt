@@ -68,6 +68,9 @@ class UserRepository(private val db: Databases, private val cache: com.tolmol.us
         account.first
     }!!
 
+    override fun display(id: UUID): Pair<String,java.time.Instant?> = db.users.sql.sql("""select coalesce(p.name,'TolMol member') as name,a.joined_at
+        from accounts a left join account_profiles p on p.user_id=a.id where a.id=?""").param(id)
+        .query { row,_ -> row.getString("name") to row.getTimestamp("joined_at")?.toInstant() }.optional().orElse("TolMol member" to null)
     override fun find(email: String) = db.users.sql.sql("select * from accounts where email=?").param(email)
         .query(UserEntity::class.java).optional().orElse(null)?.toDomain()
     override fun hasRole(id: UUID, role: Role) = db.users.sql.sql("select count(*) from accounts where id=? and ?=any(string_to_array(roles,','))")
