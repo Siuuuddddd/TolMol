@@ -1,58 +1,91 @@
 package com.tolmol.app.feature.auth.presentation
 
+import android.util.Patterns
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import com.tolmol.app.feature.auth.domain.Role
+import androidx.compose.ui.unit.sp
+import com.tolmol.app.R
 
 @Composable
-fun AuthForm(state: AuthUiState, register: Boolean, preferredRole: Role?, viewModel: AuthViewModel, toggleMode: () -> Unit) {
+fun AuthForm(state: AuthUiState, register: Boolean, viewModel: AuthViewModel, toggleMode: () -> Unit) {
+    var name by rememberSaveable { mutableStateOf("") }
     var email by rememberSaveable { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var buyer by rememberSaveable(preferredRole) { mutableStateOf(preferredRole != Role.SELLER) }
-    var seller by rememberSaveable(preferredRole) { mutableStateOf(preferredRole != Role.BUYER) }
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        Text("TolMol", style = MaterialTheme.typography.displaySmall, color = MaterialTheme.colorScheme.primary)
-        Text(if (register) "Create an account" else "Sign in", style = MaterialTheme.typography.headlineSmall)
-        OutlinedTextField(email, { email = it }, Modifier.fillMaxWidth(), label = { Text("Email") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email), singleLine = true)
-        OutlinedTextField(password, { password = it }, Modifier.fillMaxWidth(), label = { Text("Password") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            visualTransformation = PasswordVisualTransformation(), singleLine = true)
-        if (register) {
-            Text("Choose at least one role")
-            Row {
-                FilterChip(buyer, { buyer = !buyer }, label = { Text("Buyer") })
-                Spacer(Modifier.width(8.dp))
-                FilterChip(seller, { seller = !seller }, label = { Text("Seller") })
+    var visible by remember { mutableStateOf(false) }
+
+    val validEmail = Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()
+    val validPassword = password.length >= 10 && password.toByteArray().size <= 72
+    val canSubmit = validEmail && password.isNotEmpty() &&
+        (!register || name.trim().length in 1..100 && validPassword)
+    fun submit() {
+        if (!canSubmit || state.loading) return
+        if (register) viewModel.registerProfile(name,email,password) else viewModel.login(email,password)
+    }
+    MaterialTheme(
+        colorScheme = lightColorScheme(primary = authBlue,onPrimary = androidx.compose.ui.graphics.Color.White,
+            background = authCream,surface = authCream,onSurface = authInk,onBackground = authInk,
+            outline = authInk),
+    ) {
+        Surface(Modifier.fillMaxSize(), color = authBlue, contentColor = authInk) {
+            Column(Modifier.fillMaxSize().background(authBlue).statusBarsPadding().navigationBarsPadding().verticalScroll(rememberScrollState()).imePadding()) {
+                Box(Modifier.fillMaxWidth().height(210.dp)) {
+                    Image(painterResource(R.drawable.registration_mailbox),null,Modifier.matchParentSize(),contentScale = ContentScale.Crop)
+                    Text("TolMol",Modifier.padding(24.dp),fontFamily = authPixelFont,fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,fontSize = 38.sp,
+                        color = androidx.compose.ui.graphics.Color.White)
+                }
+                Column(Modifier.fillMaxWidth().background(authCream).padding(horizontal = 24.dp,vertical = 20.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(if (register) "Create an account" else "Sign in",fontFamily = authPixelFont,fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,fontSize = 30.sp,lineHeight = 34.sp)
+                    if (register) {
+                        Text("Fill in your information or continue with a social account.",style = MaterialTheme.typography.bodyMedium)
+                        AuthField(name,{name=it},"Name",KeyboardType.Text)
+                    }
+                    AuthField(email,{email=it},"Email",KeyboardType.Email)
+                    OutlinedTextField(password,{password=it},Modifier.fillMaxWidth(),
+                        label = {Text("Password")},singleLine = true,shape = RoundedCornerShape(5.dp),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {TextButton({visible=!visible}) {Text(if (visible) "Hide" else "Show")}})
+                    if (register) {
+                        Text("Use 10 or more characters.",style = MaterialTheme.typography.bodySmall)
+                    }
+                    state.error?.let {
+                        Text(it,color = MaterialTheme.colorScheme.error,style = MaterialTheme.typography.bodySmall)
+                        TextButton({submit()},enabled = canSubmit && !state.loading) {Text("Retry")}
+                    }
+                    if (state.loading) LinearProgressIndicator(Modifier.fillMaxWidth())
+                    Button({submit()},Modifier.fillMaxWidth().heightIn(min = 52.dp),
+                        enabled = canSubmit && !state.loading,shape = RoundedCornerShape(5.dp)) {
+                        Text(if (register) "Create account" else "Sign in",fontFamily = authPixelFont,fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,fontSize = 22.sp)
+                    }
+                    SocialButtons(viewModel,!state.loading,if (register) "or sign up with" else "or continue with")
+                    TextButton(toggleMode,enabled = !state.loading) {
+                        Text(if (register) "Already have an account? Sign in" else "Create an account")
+                    }
+                }
             }
         }
-        state.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-        if (state.loading) LinearProgressIndicator(Modifier.fillMaxWidth())
-        Button(onClick = {
-            if (register) {
-                val roles = buildSet {
-                    if (buyer) add(Role.BUYER)
-                    if (seller) add(Role.SELLER)
-                }
-                viewModel.register(email, password, roles)
-            } else viewModel.login(email, password)
-        }, enabled = !state.loading && email.isNotBlank() && password.isNotEmpty() && (!register || buyer || seller),
-            modifier = Modifier.fillMaxWidth()) {
-            Text(if (register) "Create account" else "Sign in")
-        }
-        TextButton(onClick = toggleMode, enabled = !state.loading) {
-            Text(if (register) "Already have an account? Sign in" else "Create an account")
-        }
-        if (state.error != null) TextButton(onClick = { viewModel.restore() }) { Text("Retry saved session") }
     }
+}
+
+@Composable
+private fun AuthField(value: String, change: (String)->Unit, title: String, type: KeyboardType) {
+    OutlinedTextField(value,change,Modifier.fillMaxWidth(),label = {Text(title)},
+        singleLine = true,shape = RoundedCornerShape(5.dp),
+        keyboardOptions = KeyboardOptions(keyboardType = type))
 }

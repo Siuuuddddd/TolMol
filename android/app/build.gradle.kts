@@ -21,6 +21,12 @@ fun endpoint(property: String, fallback: String): String {
     return "\"$value\""
 }
 
+fun providerConfig(property: String): String {
+    val value = providers.gradleProperty(property).orElse("").get()
+    require(value.all { it.isLetterOrDigit() || it in "._-" }) { "Invalid provider setting: $property" }
+    return "\"$value\""
+}
+
 android {
     namespace = "com.tolmol.app"
     compileSdk = 37
@@ -31,6 +37,9 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "0.1.0"
+        buildConfigField("String", "GOOGLE_CLIENT_ID", providerConfig("tolmolGoogleClientId"))
+        buildConfigField("String", "FACEBOOK_APP_ID", providerConfig("tolmolFacebookAppId"))
+        buildConfigField("String", "FACEBOOK_CLIENT_TOKEN", providerConfig("tolmolFacebookClientToken"))
     }
 
     buildFeatures { compose = true; buildConfig = true }
@@ -47,6 +56,10 @@ android {
 }
 
 dependencies {
+    implementation(libs.credentials)
+    implementation(libs.credentials.play)
+    implementation(libs.googleid)
+    implementation(libs.facebook)
     implementation(libs.activity)
     implementation(libs.material3)
     implementation(libs.navigation)

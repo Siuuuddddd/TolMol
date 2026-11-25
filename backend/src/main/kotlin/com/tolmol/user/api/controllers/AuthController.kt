@@ -13,7 +13,7 @@ import java.util.UUID
 @RequestMapping("/api")
 class AuthController(private val auth: AuthService) {
     @PostMapping("/auth/register") @ResponseStatus(HttpStatus.CREATED)
-    fun register(@RequestBody req: RegisterRequest) = mapOf("id" to auth.register(req.email,req.password,req.roles))
+    fun register(@RequestBody req: RegisterRequest) = mapOf("id" to auth.register(req.email,req.password,req.roles,req.name))
     @PostMapping("/auth/login")
     fun login(@RequestBody req: LoginRequest) = mapOf("accessToken" to auth.login(req.email,req.password))
     @GetMapping("/me")

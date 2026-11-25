@@ -27,6 +27,10 @@ class AuthViewModel(private val auth: AuthUseCase) : ViewModel() {
     fun restore() = submit { auth.restore() }
     fun login(email: String, password: String) = submit { auth.login(email, password) }
     fun register(email: String, password: String, roles: Set<Role>) = submit { auth.register(email, password, roles) }
+    fun registerProfile(name: String, email: String, password: String) = submit { auth.registerProfile(name,email,password) }
+    fun social(provider: String, token: String) = submit { auth.social(provider,token) }
+    fun showError(message: String) { mutable.value = mutable.value.copy(loading = false,error = message) }
+    fun clearError() { mutable.value = mutable.value.copy(error = null) }
 
     fun select(role: Role?) {
         val existing = mutable.value

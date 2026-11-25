@@ -41,6 +41,36 @@ If an earlier import reports **Invalid Gradle JDK configuration**, select **Use 
 
 From `android/`, run `./gradlew assembleDebug testDebugUnitTest` or `.\gradlew.bat assembleDebug testDebugUnitTest` on Windows. The unit suite includes Koin module verification.
 
+### Social sign-in setup
+
+The welcome Sign in button uses the device's Google account flow; the Google and Facebook buttons also authenticate through their providers. Android Credential Manager may select a previously authorized Google account automatically, otherwise it asks the user to choose or consent. Email/password sign-in remains available from the account form's Sign in link. New Android accounts support both buying and selling; the welcome cards are informational.
+
+Email registration works without provider configuration. To enable real social sign-in, configure TolMol's own provider applications:
+
+1. Google: create an Android OAuth client for `com.tolmol.app` and this signing certificate's SHA-1, plus a Web OAuth client in the same project. Set the Web client ID in both places below. `android/gradlew.bat -p android signingReport` prints the debug certificate fingerprint when run from the repository root.
+2. Facebook: configure Facebook Login for Android with package `com.tolmol.app`, activity `com.tolmol.app.MainActivity`, and the signing certificate's Facebook key hash. Development-mode users must belong to the provider application's allowed test roles. Supply an email when granting access.
+3. Add the public Android settings to **your user** `~/.gradle/gradle.properties`, then sync and rebuild. Do not put an app secret in Android:
+
+   ```properties
+   tolmolGoogleClientId=YOUR_WEB_CLIENT_ID.apps.googleusercontent.com
+   tolmolFacebookAppId=YOUR_FACEBOOK_APP_ID
+   tolmolFacebookClientToken=YOUR_FACEBOOK_CLIENT_TOKEN
+   ```
+
+4. Add server settings to the ignored `backend/.env` and restart the backend:
+
+   ```properties
+   TOLMOL_GOOGLE_CLIENT_ID=YOUR_WEB_CLIENT_ID.apps.googleusercontent.com
+   TOLMOL_FACEBOOK_APP_ID=YOUR_FACEBOOK_APP_ID
+   TOLMOL_FACEBOOK_APP_SECRET=YOUR_FACEBOOK_APP_SECRET
+   # Optional Graph API version override:
+   TOLMOL_FACEBOOK_GRAPH_VERSION=v24.0
+   ```
+
+No Firebase project or FCM key is needed. Without these settings the app reports a configuration error and the server refuses social authentication. The server verifies Google signature/issuer/audience/expiry/email verification, and Facebook token validity/app/expiry/user/email before issuing its own JWT. Existing password accounts are never silently linked by email; use their existing sign-in method. Provider credentials are not supplied in this repository, so real Google/Facebook acceptance testing is pending.
+
+Provider guides: [Google Credential Manager](https://developer.android.com/identity/sign-in/credential-manager-siwg-implementation), [Facebook Login for Android](https://developers.facebook.com/docs/facebook-login/android/).
+
 ## REST API
 
 Send JSON bodies and use `Authorization: Bearer <accessToken>` on authenticated requests. Currency fields are decimal rupees, rates are rupees per kilogram, weights are kilograms, deadlines are ISO-8601 instants, and IDs are UUIDs except the numeric chat message cursor.
@@ -48,6 +78,7 @@ Send JSON bodies and use `Authorization: Bearer <accessToken>` on authenticated 
 | Endpoint | Purpose |
 |---|---|
 | `POST /api/auth/register`, `POST /api/auth/login` | Register with email, password and roles such as `["SELLER","BUYER"]`. Login with email and password for a token. |
+| `POST /api/auth/social` | Exchange a verified provider token for a TolMol JWT. Registration also accepts an optional `name`. |
 | `GET /api/me` | Current account ID and available roles. |
 | `PUT /api/me/location/{BUYER or SELLER}` | Set latitude and longitude for that role. Refresh within 15 minutes before publishing, browsing or bidding. |
 | `POST /api/listings` | Publish with category, weight, startingRate and deadline. Uses the seller’s stored location. |

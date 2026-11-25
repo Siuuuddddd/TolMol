@@ -37,6 +37,17 @@ class AuthRepositoryImpl(private val api: AuthApi, private val session: SessionS
         api.register(RegisterDto(email.trim(), password, roles.map { it.name }.toSet()))
         login(email, password)
     }
+    override suspend fun registerProfile(name: String, email: String, password: String): Account = authRequest {
+        api.register(RegisterDto(email.trim(), password, setOf("BUYER","SELLER"), name.trim()))
+        login(email,password)
+    }
+
+    override suspend fun social(provider: String, token: String): Account = authRequest("Provider sign-in could not be verified. Retry.") {
+        val issued = api.social(SocialLoginDto(provider,token)).accessToken
+        val profile = account(issued)
+        session.save(issued)
+        profile
+    }
 
     override suspend fun logout() = session.clear()
 
@@ -44,11 +55,13 @@ class AuthRepositoryImpl(private val api: AuthApi, private val session: SessionS
         Account(dto.id, dto.roles.mapNotNull { name -> Role.entries.find { it.name == name } }.toSet())
     }
 
-    private suspend fun <T> authRequest(block: suspend () -> T): T = try { block() }
+    private suspend fun <T> authRequest(unauthorizedMessage: String? = null, block: suspend () -> T): T = try { block() }
     catch (error: CancellationException) { throw error }
     catch (error: AuthError) { throw error }
     catch (error: Exception) {
-        if (error is HttpException && error.code() == 401) throw AuthError.InvalidCredentials
+        if (error is HttpException && error.code() == 401) {
+            throw unauthorizedMessage?.let { AuthError.RequestFailed(it) } ?: AuthError.InvalidCredentials
+        }
         throw AuthError.RequestFailed(error.serverMessage())
     }
 }

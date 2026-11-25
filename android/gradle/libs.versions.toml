@@ -11,6 +11,10 @@ compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 
 [libraries]
+credentials = { module = "androidx.credentials:credentials", version = "1.6.0" }
+credentials-play = { module = "androidx.credentials:credentials-play-services-auth", version = "1.6.0" }
+googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version = "1.2.1" }
+facebook = { module = "com.facebook.android:facebook-login", version = "19.0.1" }
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 koin-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koin" }
 koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }

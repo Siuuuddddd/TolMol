@@ -11,12 +11,13 @@ interface TokenIssuer { fun issue(id: UUID): String }
 @Service
 class AuthService(private val store: UserStore, private val encoder: PasswordEncoder, private val issuer: TokenIssuer) {
     private val dummyHash = encoder.encode(UUID.randomUUID().toString())
-    fun register(email: String,password: String,roles: Set<Role>): UUID {
+    fun register(email: String,password: String,roles: Set<Role>,name: String? = null): UUID {
         val normalized = email.trim().lowercase()
         require(normalized.length <= 254 && normalized.matches(Regex("[^@\\s]+@[^@\\s]+\\.[^@\\s]+"))) { "Invalid email" }
         require(password.length >= 10 && password.toByteArray().size <= 72 && roles.isNotEmpty()) { "Invalid password or roles" }
+        require(name == null || name.trim().length in 1..100) { "Enter a name with 1–100 characters" }
         val id = UUID.randomUUID()
-        store.register(Account(id,normalized,encoder.encode(password),roles))
+        store.register(Account(id,normalized,encoder.encode(password),roles),name?.trim())
         return id
     }
     fun login(email: String,password: String): String {

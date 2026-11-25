@@ -45,37 +45,44 @@ fun TolMolNavigation(auth: AuthViewModel = koinViewModel()) {
     val state by auth.state.collectAsStateWithLifecycle()
     var register by rememberSaveable { mutableStateOf(false) }
     var showForm by rememberSaveable { mutableStateOf(false) }
-    var preferredRole by rememberSaveable { mutableStateOf<Role?>(null) }
+    val providerSignIn = rememberProviderSignIn(auth)
     val role = state.role
     val account = state.account
     LaunchedEffect(account?.id) {
         if (account != null) {
             register = false
-            showForm = true
+            showForm = false
         }
     }
-    BackHandler(enabled = account == null && showForm && !state.loading && state.error == null) {
+    BackHandler(enabled = account == null && showForm && !state.loading) {
+        auth.clearError()
         showForm = false
     }
-    if (account == null && !showForm && !state.loading && state.error == null) {
+    if (account == null && !showForm && !state.loading) {
         WelcomeScreen(
+            state = state,
+            viewModel = auth,
             signIn = {
-                preferredRole = null
-                register = false
-                showForm = true
+                auth.clearError()
+                // The primary sign-in action uses the Google account chooser.
+                providerSignIn("GOOGLE")
             },
-            register = { selectedRole ->
-                preferredRole = selectedRole
+            register = {
+                auth.clearError()
                 register = true
                 showForm = true
             },
         )
         return
     }
+    if (account == null && showForm) {
+        AuthForm(state, register, auth) { auth.clearError(); register = !register }
+        return
+    }
     Box(Modifier.fillMaxSize().safeDrawingPadding().imePadding()) {
         when {
             account == null && state.loading && !showForm -> CircularProgressIndicator(Modifier.padding(24.dp))
-            account == null -> AuthForm(state, register, preferredRole, auth) { register = !register }
+            account == null -> AuthForm(state, register, auth) { auth.clearError(); register = !register }
             role == null -> RolePicker(state, auth::select, { auth.logout() })
             else -> key(account.id, role) {
                 MarketplaceNavigation(account, role, { auth.select(null) }, { auth.logout() })

@@ -2,7 +2,7 @@ package com.tolmol.app.feature.auth.presentation
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CutCornerShape
@@ -10,68 +10,63 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.Role as AccessibilityRole
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tolmol.app.R
 import com.tolmol.app.feature.auth.domain.Role
 
-private val pixelFont = FontFamily(Font(R.font.pixelify_sans))
-private val panel = CutCornerShape(8.dp)
+private val panel = CutCornerShape(6.dp)
 
 @Composable
-fun WelcomeScreen(signIn: () -> Unit, register: (Role) -> Unit) {
-    BoxWithConstraints(Modifier.fillMaxSize()) {
-        if (LocalDensity.current.fontScale > 1f || maxHeight < 560.dp || maxWidth / maxHeight > 0.55f) {
-            ConveyorScreen("What brings you here?") {
-                RolePanel("Sell scrap", "List a lot and choose an offer.") { register(Role.SELLER) }
-                RolePanel("Buy scrap nearby", "Find local lots and bid per kg.") { register(Role.BUYER) }
-                Text("You can do both with one account.")
-                Button(signIn, Modifier.fillMaxWidth().heightIn(min = 56.dp), shape = panel) { Text("Sign in") }
+fun WelcomeScreen(state: AuthUiState, viewModel: AuthViewModel, signIn: () -> Unit, register: () -> Unit) {
+    Column(Modifier.fillMaxSize().background(Color(0xFF121319))
+        .verticalScroll(rememberScrollState()).navigationBarsPadding(),
+        horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(Modifier.fillMaxWidth().height(340.dp)) {
+            Image(painterResource(R.drawable.scrap_conveyor),null,Modifier.matchParentSize(),contentScale = ContentScale.Crop)
+            Box(Modifier.matchParentSize().background(androidx.compose.ui.graphics.Brush.horizontalGradient(
+                listOf(Color(0xDD121319), Color.Transparent), endX = 800f)))
+            Column(Modifier.statusBarsPadding().padding(24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("TolMol",fontFamily = authPixelFont,fontWeight = FontWeight.Bold,fontSize = 42.sp,lineHeight = 46.sp,color = MaterialTheme.colorScheme.primary)
+                Text("What brings\nyou here?",fontFamily = authPixelFont,fontWeight = FontWeight.Bold,fontSize = 26.sp,lineHeight = 29.sp,color = Color.White)
             }
-        } else {
-            // Measure controls against the artwork so their hit areas scale with it.
-            val width = maxWidth
-            val height = maxHeight
-            Image(
-                painter = painterResource(R.drawable.tolmol_welcome),
-                contentDescription = null,
-                modifier = Modifier.matchParentSize(),
-                contentScale = ContentScale.FillBounds,
-            )
-            Box(Modifier.offset(width * 0.06f, height * 0.08f).size(width * 0.48f, height * 0.15f)
-                .semantics { heading(); contentDescription = "TolMol. What brings you here?" })
-            ArtworkButton(
-                Modifier.offset(width * 0.02f, height * 0.457f).size(width * 0.96f, height * 0.133f),
-                "Sell scrap. List a lot and choose an offer.",
-            ) { register(Role.SELLER) }
-            ArtworkButton(
-                Modifier.offset(width * 0.02f, height * 0.605f).size(width * 0.96f, height * 0.139f),
-                "Buy scrap nearby. Find local lots and bid per kg.",
-            ) { register(Role.BUYER) }
-            Box(Modifier.offset(width * 0.045f, height * 0.76f).size(width * 0.9f, height * 0.035f)
-                .semantics { contentDescription = "You can do both with one account." })
-            ArtworkButton(
-                Modifier.offset(width * 0.037f, height * 0.805f).size(width * 0.926f, height * 0.115f),
-                "Sign in",
-                signIn,
-            )
+        }
+        Column(Modifier.fillMaxWidth(0.86f).widthIn(max = 400.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            InfoPanel("Sell scrap","List a lot and choose an offer.")
+            InfoPanel("Buy scrap nearby","Find local lots and bid per kg.")
+        }
+        Text("You can do both with one account.",Modifier.padding(top = 12.dp,bottom = 18.dp),style = MaterialTheme.typography.bodySmall)
+        Column(Modifier.widthIn(max = 440.dp).fillMaxWidth().padding(horizontal = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Button(signIn,Modifier.fillMaxWidth().heightIn(min = 52.dp),enabled = !state.loading,shape = panel) {
+                Text("Sign in",fontFamily = authPixelFont,fontWeight = FontWeight.Bold,fontSize = 21.sp)
+            }
+            OutlinedButton(register,Modifier.fillMaxWidth().heightIn(min = 52.dp),enabled = !state.loading,shape = panel) {
+                Text("Create an account",fontFamily = authPixelFont,fontWeight = FontWeight.Bold,fontSize = 20.sp)
+            }
+            state.error?.let { Text(it,color = MaterialTheme.colorScheme.error,style = MaterialTheme.typography.bodySmall) }
+            if (state.loading) LinearProgressIndicator(Modifier.fillMaxWidth())
+            SocialButtons(viewModel,!state.loading)
+            Spacer(Modifier.height(12.dp))
         }
     }
 }
 
 @Composable
-private fun ArtworkButton(modifier: Modifier, label: String, onClick: () -> Unit) {
-    Box(modifier.semantics { contentDescription = label }.clickable(role = AccessibilityRole.Button, onClick = onClick))
+private fun InfoPanel(title: String, subtitle: String) {
+    OutlinedCard(Modifier.fillMaxWidth(),shape = panel,border = BorderStroke(1.dp,Color(0xFF7D808C)),
+        colors = CardDefaults.outlinedCardColors(containerColor = Color(0xFF30323F))) {
+        Column(Modifier.padding(horizontal = 16.dp,vertical = 10.dp),verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(title,fontFamily = authPixelFont,fontWeight = FontWeight.Bold,fontSize = 19.sp,lineHeight = 22.sp,color = Color.White)
+            Text(subtitle,style = MaterialTheme.typography.bodySmall,color = Color(0xFFE1E1E8))
+        }
+    }
 }
 
 @Composable
@@ -94,8 +89,8 @@ private fun ConveyorScreen(title: String, content: @Composable ColumnScope.() ->
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)) {
         Spacer(Modifier.height(8.dp))
-        Text("TolMol", fontFamily = pixelFont, fontSize = 48.sp, lineHeight = 52.sp, color = MaterialTheme.colorScheme.primary)
-        Text(title, fontFamily = pixelFont, fontSize = 27.sp, lineHeight = 32.sp)
+        Text("TolMol", fontFamily = authPixelFont, fontSize = 48.sp, lineHeight = 52.sp, color = MaterialTheme.colorScheme.primary)
+        Text(title, fontFamily = authPixelFont, fontSize = 27.sp, lineHeight = 32.sp)
         Image(painterResource(R.drawable.scrap_conveyor), contentDescription = null,
             modifier = Modifier.fillMaxWidth().aspectRatio(2.25f), contentScale = ContentScale.Crop)
         content()

@@ -36,6 +36,15 @@
 - Live updates use one bearer-authenticated WebSocket. The client serializes commands because the server replies lack correlation IDs. Reconnection reloads current state and renews the active auction subscription.
 - The Pixel 9 Pro onboarding uses the Scrap Conveyor palette and original artwork. Native Compose text and controls support Android font scaling.
 - Android starts Koin in the Application and binds feature repositories, use cases, and ViewModels in the Koin application module. Navigation 3 scopes the injected ViewModels to each entry. The JVM unit suite verifies the dependency graph without starting Android.
-- The signed-out welcome screen uses the approved Scrap Conveyor artwork to preserve its lettering and layout. Compose supplies the accessible actions and renders scalable text at larger Android font settings. The seller and buyer actions preselect that role during registration.
+- The signed-out welcome uses the Scrap Conveyor artwork with native scalable pixel headings, smaller non-clickable text cards, explicit authentication actions and Google/Facebook buttons. Registration has no role chips; new Android accounts receive both existing roles. Role selection remains a separate authenticated action.
 - Android Studio uses its bundled JDK for Gradle sync. Studio-generated daemon JVM criteria are local because pinning a different JDK forced toolchain provisioning during Windows IDE sync.
 - Windows workspace setup repairs the pre-restructure root Gradle link to backend/ and saves separate local Java homes for backend and Android IDE imports. IDE JDK selections use GRADLE_LOCAL_JAVA_HOME to resolve the project configuration.
+
+## Authentication redesign — 2026-11-25
+
+- The registration form follows the supplied name/email/password layout, with native editable controls, password visibility, local validation, social options and a sign-in link. Original pixel mailbox artwork uses the supplied cobalt, red and cream palette. No published Terms document was supplied, so the app does not invent legal terms or require a meaningless agreement checkbox.
+- `POST /api/auth/register` accepts optional name without changing legacy clients. Users DB migration V4 stores profiles and provider identities separately, preserving the accounts schema and existing marketplace rules.
+- `POST /api/auth/social` is the only new endpoint. API DTO/controller, service/verifier contract and infrastructure adapter/repository retain the existing layers. The backend, not the device, verifies provider tokens before issuing a TolMol JWT.
+- Google uses Credential Manager's authorized-account auto-selection with consent/account-choice fallback. Facebook uses its SDK with automatic analytics and advertising-ID collection disabled. No credential, secret, Firebase project or cloud deployment is bundled.
+- Provider identity is keyed by provider/subject. A transaction and advisory lock make repeated sign-ins reuse one account; email collisions with existing accounts are rejected rather than silently linking identities. New social accounts have both existing roles and an unguessable password hash.
+- Real Google/Facebook acceptance is blocked on owner-supplied provider registration and credentials. Email/password registration and the rest of the MVP remain usable; missing provider configuration returns an actionable error.

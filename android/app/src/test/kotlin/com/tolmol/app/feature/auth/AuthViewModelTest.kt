@@ -23,6 +23,8 @@ class AuthViewModelTest {
                     return account
                 }
                 override suspend fun register(email: String, password: String, roles: Set<Role>) = account
+                override suspend fun registerProfile(name: String, email: String, password: String) = account
+                override suspend fun social(provider: String, token: String) = account
                 override suspend fun logout() { tokenChanges.value = null }
             }
             val vm = AuthViewModel(AuthUseCase(repo))

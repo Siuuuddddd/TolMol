@@ -9,13 +9,36 @@ import com.tolmol.user.infra.database.mappers.toDomain
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.stereotype.Repository
 import java.util.UUID
+import com.tolmol.user.service.SocialIdentity
 
 @Repository
 class UserRepository(private val db: Databases, private val cache: com.tolmol.user.infra.redis.LocationCache) : UserStore {
-    override fun register(account: Account) {
+    override fun register(account: Account, name: String?) {
         try {
-            db.users.sql.sql("insert into accounts values(?,?,?,?)").params(account.id,account.email,account.passwordHash,account.roles.joinToString(",")).update()
+            db.users.transactions.execute {
+                db.users.sql.sql("insert into accounts values(?,?,?,?)").params(account.id,account.email,account.passwordHash,account.roles.joinToString(",")).update()
+                if (name != null) db.users.sql.sql("insert into account_profiles(user_id,name) values(?,?)").params(account.id,name).update()
+            }
         } catch (e: DuplicateKeyException) { throw EmailTakenException() }
+    }
+    override fun socialAccount(identity: SocialIdentity, passwordHash: String): UUID {
+        try {
+            return db.users.transactions.execute {
+                val key = identity.provider + ":" + identity.subject
+                db.users.sql.sql("select pg_advisory_xact_lock(hashtextextended(?,0))").param(key).query { _,_ -> true }.single()
+                val existing = db.users.sql.sql("select user_id from social_identities where provider=? and subject=?")
+                    .params(identity.provider,identity.subject).query(UUID::class.java).optional().orElse(null)
+                if (existing != null) return@execute existing
+                if (find(identity.email) != null) throw EmailTakenException()
+                val id = UUID.randomUUID()
+                db.users.sql.sql("insert into accounts values(?,?,?,?)")
+                    .params(id,identity.email,passwordHash,"BUYER,SELLER").update()
+                db.users.sql.sql("insert into account_profiles(user_id,name) values(?,?)").params(id,identity.name).update()
+                db.users.sql.sql("insert into social_identities(provider,subject,user_id) values(?,?,?)")
+                    .params(identity.provider,identity.subject,id).update()
+                id
+            }!!
+        } catch (error: DuplicateKeyException) { throw EmailTakenException() }
     }
     override fun find(email: String) = db.users.sql.sql("select * from accounts where email=?").param(email)
         .query(UserEntity::class.java).optional().orElse(null)?.toDomain()
