@@ -3,6 +3,7 @@ package com.tolmol.marketplace.infra.demo
 import com.tolmol.platform.infra.config.Databases
 import com.tolmol.marketplace.domain.model.*
 import com.tolmol.marketplace.service.*
+import com.tolmol.marketplace.infra.redis.ListingGeoIndex
 import com.tolmol.user.service.*
 import com.tolmol.user.domain.model.*
 import com.tolmol.user.domain.model.Role
@@ -39,7 +40,7 @@ class DemoSeeder(
     private val listings: ListingStore, private val market: MarketplaceService,
     private val bids: BidStore, private val bidding: BiddingService, private val chat: ChatService,
     private val deals: DealService, private val alerts: AlertStore,
-    private val redis: StringRedisTemplate, private val env: Environment,
+    private val redis: StringRedisTemplate, private val env: Environment, private val geoIndex: ListingGeoIndex,
 ) : ApplicationRunner {
     private val log=LoggerFactory.getLogger(javaClass)
     private fun id(key: String) = UUID.nameUUIDFromBytes(("tolmol.demo:"+key).toByteArray())
@@ -108,16 +109,16 @@ class DemoSeeder(
             val lotId=id("lot:$index")
             val deadline=now.plusSeconds(if(index<5) 2700L+index*600 else 7200L+(index*4700L)%248400L)
             val seller=people[sellerIndices[index%sellerIndices.size]]
+            val point=auth.position(seller,Role.SELLER)
             if(listings.get(lotId)==null) {
-                val point=auth.position(seller,Role.SELLER)
                 listings.insert(Listing(lotId,seller,item.category,item.kg.toBigDecimal(),item.rate.toBigDecimal(),
                     point.latitude,point.longitude,deadline,"OPEN",0,item.title,item.description,item.key))
             } else {
                 // Preserve participant activity and terminal states; refresh only still-open demo lots.
-                db.marketplace.sql.sql("update listings set deadline=?,version=version+1 where id=? and status='OPEN'")
-                    .params(Timestamp.from(deadline),lotId).update()
+                db.marketplace.sql.sql("update listings set deadline=?,latitude=?,longitude=?,version=version+1 where id=? and status='OPEN'")
+                    .params(Timestamp.from(deadline),point.latitude,point.longitude,lotId).update()
             }
-            listings.get(lotId)!!
+            listings.get(lotId)!!.also { geoIndex.add(it) }
         }
         var serial=0
         fun history(index: Int,buyer: UUID,step: Int): Bid? {

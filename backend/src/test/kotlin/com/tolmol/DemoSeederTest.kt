@@ -16,6 +16,7 @@ class DemoSeederTest : BackendTest() {
     @Autowired lateinit var db: Databases
     @Autowired lateinit var auth: AuthService
     @Autowired lateinit var market: MarketplaceService
+    @Autowired lateinit var environment: org.springframework.core.env.ConfigurableEnvironment
     @Test fun rerunningSeedCreatesNoDuplicatesAndFeedCanFindFiftyOpenLots() {
         seed.seed()
         val demoUsers=db.users.sql.sql("select id from accounts where email like '%@tolmol.demo'").query(UUID::class.java).list()
@@ -31,6 +32,15 @@ class DemoSeederTest : BackendTest() {
         val demoOpen=db.marketplace.sql.sql("select id from listings where seller in (:users) and status='OPEN'").param("users",demoUsers).query(UUID::class.java).set()
         assertEquals(50,demoOpen.size)
         assertTrue(market.feedDetails(buyer).map { it.lot.id }.containsAll(demoOpen))
+        environment.propertySources.addFirst(org.springframework.core.env.MapPropertySource("moved-demo-center",mapOf(
+            "tolmol.seed.center-lat" to 18.5204,"tolmol.seed.center-lng" to 73.8567)))
+        try {
+            seed.seed()
+            assertTrue(market.feedDetails(buyer).map { it.lot.id }.containsAll(demoOpen))
+        } finally {
+            environment.propertySources.remove("moved-demo-center")
+            seed.seed()
+        }
         assertEquals(3L,db.marketplace.sql.sql("select count(*) from deals where buyer=?").param(buyer).query(Long::class.java).single())
         val unrelated=auth.register("retained-${UUID.randomUUID()}@example.org","unrelated-password",setOf(Role.BUYER))
         seed.reset()
