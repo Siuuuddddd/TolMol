@@ -27,7 +27,7 @@ For Windows IDE imports, run `.\setup-workspace.ps1` from the repository root be
 
 1. Start the backend from `backend/` as above. Check that `http://localhost:8080/health` reports `UP`.
 2. Open `android/` in Android Studio and sync with its bundled JDK. For command-line builds use JDK 21. Install Android SDK 37 from SDK Manager if prompted. Run the **app** configuration on an emulator with Google Play services. The reference device is Pixel 9 Pro.
-3. In the emulator's **Extended controls → Location**, set and send a point. Choose a role in TolMol and allow location. A buyer and a seller must be separate accounts to test bidding on the seller's lot.
+3. In the emulator's **Extended controls → Location**, set and send a point. Sign in and allow location. Accounts with buyer access open nearby discovery directly; use **Switch to selling** on home to open your listings. Seller-only accounts open listings directly. A buyer and a seller must be separate accounts to test bidding on the seller's lot.
 4. Emulator debug builds resolve the host at `10.0.2.2:8080`. For a physical device on the same network, add the following to your user Gradle properties (`~/.gradle/gradle.properties`), using your computer's reachable LAN IP, then sync and rebuild.
 
    ```properties
@@ -45,7 +45,7 @@ The UI uses the locally bundled, SIL OFL licensed **Pixelify Sans** for every Ma
 
 ### GOOGLE SIGN-IN
 
-Google sign-in uses Android Credential Manager and the backend's `POST /auth/google` endpoint. The device sends `{ "idToken": "..." }`; the backend verifies Google's signature, issuer, expiry, audience and verified email, then returns the same `{ "accessToken": "..." }` response as password login. The app stores that TolMol JWT in DataStore and continues through role selection to home. No Firebase setup is needed.
+Google sign-in uses Android Credential Manager and the backend's `POST /auth/google` endpoint. The device sends `{ "idToken": "..." }`; the backend verifies Google's signature, issuer, expiry, audience and verified email, then returns the same `{ "accessToken": "..." }` response as password login. The app stores that TolMol JWT in DataStore and opens the home screen directly. No Firebase setup is needed.
 
 1. In [Google Cloud Console](https://console.cloud.google.com/apis/credentials), configure the OAuth consent screen and create **both** a Web OAuth client and an Android OAuth client in the same project. Use package `com.tolmol.app` for Android and register the debug signing certificate's SHA-1. If the consent screen is in testing mode, add your test Google account.
 2. From `android/`, run `./gradlew signingReport` (Windows: `.\gradlew.bat signingReport`) and copy the debug **SHA-1** to the Android OAuth client. Keep the same debug keystore when rebuilding; register the new fingerprint if you change it.

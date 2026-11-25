@@ -83,16 +83,17 @@ fun TolMolNavigation(auth: AuthViewModel = koinViewModel()) {
         when {
             account == null && state.loading && !showForm -> CircularProgressIndicator(Modifier.padding(24.dp))
             account == null -> AuthForm(state, register, auth) { auth.clearError(); register = !register }
-            role == null -> RolePicker(state, auth::select, { auth.logout() })
+            role == null -> CircularProgressIndicator(Modifier.padding(24.dp))
             else -> key(account.id, role) {
-                MarketplaceNavigation(account, role, { auth.select(null) }, { auth.logout() })
+                val otherRole = account.roles.firstOrNull { it != role }
+                MarketplaceNavigation(account, role, otherRole?.let { next -> { auth.select(next) } }, { auth.logout() })
             }
         }
     }
 }
 
 @Composable
-private fun MarketplaceNavigation(account: Account, role: Role, changeRole: () -> Unit, logout: () -> Unit) {
+private fun MarketplaceNavigation(account: Account, role: Role, changeRole: (() -> Unit)?, logout: () -> Unit) {
     val sharedTabs = listOf(MarketplaceTab.CHAT, MarketplaceTab.ALERTS, MarketplaceTab.DEALS)
     val tabs = (if (role == Role.BUYER) listOf(MarketplaceTab.DISCOVER, MarketplaceTab.BIDS)
         else listOf(MarketplaceTab.LISTINGS)) + sharedTabs
@@ -111,7 +112,10 @@ private fun MarketplaceNavigation(account: Account, role: Role, changeRole: () -
         Column(Modifier.fillMaxSize().padding(padding)) {
             Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                 if (stack.size > 1) TextButton(back) { Text("Back") }
-                else TextButton(changeRole) { Text(if (role == Role.BUYER) "Buyer mode" else "Seller mode") }
+                else if (changeRole != null) TextButton(changeRole) {
+                    Text(if (role == Role.BUYER) "Switch to selling" else "Switch to buying")
+                }
+                else Text(if (role == Role.BUYER) "Buyer mode" else "Seller mode", Modifier.padding(12.dp))
                 TextButton(logout) { Text("Sign out") }
             }
             LocationStatus(role, koinViewModel()) { location = it }

@@ -32,9 +32,9 @@ class AuthViewModel(private val auth: AuthUseCase, private val googleSignIn: Goo
     fun showError(message: String) { mutable.value = mutable.value.copy(loading = false,error = message) }
     fun clearError() { mutable.value = mutable.value.copy(error = null) }
 
-    fun select(role: Role?) {
+    fun select(role: Role) {
         val existing = mutable.value
-        if (role == null || role in existing.account?.roles.orEmpty()) mutable.value = existing.copy(role = role)
+        if (role in existing.account?.roles.orEmpty()) mutable.value = existing.copy(role = role)
     }
 
     fun logout() = submit { auth.logout(); null }
@@ -42,7 +42,14 @@ class AuthViewModel(private val auth: AuthUseCase, private val googleSignIn: Goo
     private fun submit(work: suspend () -> Account?) {
         mutable.value = mutable.value.copy(loading = true, error = null)
         viewModelScope.launch {
-            try { mutable.value = AuthUiState(loading = false, account = work()) }
+            try {
+                val account = work()
+                val role = account?.let {
+                    if (Role.BUYER in it.roles) Role.BUYER
+                    else it.roles.firstOrNull() ?: error("No supported account role is available. Please sign in again.")
+                }
+                mutable.value = AuthUiState(loading = false, account = account, role = role)
+            }
             catch (error: CancellationException) { throw error }
             catch (error: Exception) { mutable.value = AuthUiState(loading = false, error = error.message ?: "Sign-in failed.") }
         }

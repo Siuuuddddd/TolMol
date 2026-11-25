@@ -11,15 +11,16 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AuthViewModelTest {
-    @Test fun passwordAndGoogleSessionsKeepRolesAndHandleRetry() = runTest {
+    @Test fun signInRegistrationAndRestoreOpenAllowedHomeWithoutRolePrompt() = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
         try {
-            val account = Account("account-id", setOf(Role.BUYER))
+            var account = Account("account-id", setOf(Role.BUYER))
+            var restoredAccount: Account? = null
             var receivedIdToken: String? = null
             var googleFailure = false
             val repo = object : AuthRepository {
                 override val tokenChanges = MutableStateFlow<String?>(null)
-                override suspend fun restore(): Account? = null
+                override suspend fun restore(): Account? = restoredAccount
                 override suspend fun login(email: String, password: String): Account {
                     tokenChanges.value = "jwt"
                     return account
@@ -39,8 +40,9 @@ class AuthViewModelTest {
             vm.login("buyer@example.test", "valid password")
             runCurrent()
             assertEquals(account, vm.state.value.account)
+            assertEquals(Role.BUYER, vm.state.value.role)
             vm.select(Role.SELLER)
-            assertNull(vm.state.value.role)
+            assertEquals(Role.BUYER, vm.state.value.role)
             vm.select(Role.BUYER)
             assertEquals(Role.BUYER, vm.state.value.role)
             vm.logout()
@@ -53,12 +55,23 @@ class AuthViewModelTest {
             assertNotNull(vm.state.value.error)
             assertNull(vm.state.value.account)
             googleFailure = false
+            account = account.copy(roles = setOf(Role.BUYER,Role.SELLER))
             vm.google("provider-id-token")
             runCurrent()
             assertEquals("provider-id-token",receivedIdToken)
             assertEquals(account,vm.state.value.account)
             assertNull(vm.state.value.error)
-            assertNull(vm.state.value.role)
+            assertEquals(Role.BUYER,vm.state.value.role)
+            vm.select(Role.SELLER)
+            assertEquals(Role.SELLER,vm.state.value.role)
+            vm.registerProfile("Recycler","recycler@example.test","valid password")
+            runCurrent()
+            assertEquals(Role.BUYER,vm.state.value.role)
+            restoredAccount = account.copy(roles = setOf(Role.SELLER))
+            vm.restore()
+            runCurrent()
+            assertEquals(Role.SELLER,vm.state.value.role)
+            assertEquals(restoredAccount,vm.state.value.account)
         } finally { Dispatchers.resetMain() }
     }
 }
