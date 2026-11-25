@@ -96,3 +96,7 @@
 - Emulator testing exposed a Nav3 detail transition retaining a loading effect keyed only by route ID while its ViewModel owner changed. Detail/chat/offer/deal effects now include the ViewModel in their keys; conversation messages and composer were rechecked after rebuilding.
 
 - Public listing DTO distance is rounded to 0.1 km as well as formatted in the app; precise pickup coordinates are exposed only by the existing participant-only deal endpoint.
+
+### Additional metal product photos — 2026-11-26
+
+Imported six supplied photos (two iron rods, two copper wire, two aluminium sheets), bringing the bundled catalog to 23 photos. Stable keys scrap_metal_02/03 map to iron rods, 04/05 to copper wire, and 06/07 to aluminium sheet offcuts. Each pair is used across the two corresponding demo lots. Demo startup refreshes their image keys on existing OPEN lots without resetting bids, chats or deals. Original files and watermarks are retained; optimized images keep the existing 800px/120KB limits.

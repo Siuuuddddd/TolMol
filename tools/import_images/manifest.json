@@ -100,5 +100,41 @@
     "hash": "CE136C5E63C695017C4A7F7770897BE5B01CF2AF4DD49D1D20DA7EE75DAC3D7B",
     "category": "paper",
     "imageKey": "scrap_paper_02"
+  },
+  {
+    "source": "metal_02_iron_rods_01.png",
+    "hash": "5474D57891900481162EC5EB470FC0D7F51A16F44C4F0B4636255C52A98E3311",
+    "category": "metal",
+    "imageKey": "scrap_metal_02"
+  },
+  {
+    "source": "metal_03_iron_rods_02.png",
+    "hash": "662AAFCDF08F349627F04FE923C0EA0978F8153E08A7DEF21E52D3AF04EDD561",
+    "category": "metal",
+    "imageKey": "scrap_metal_03"
+  },
+  {
+    "source": "metal_04_copper_wire_01.png",
+    "hash": "015005C262BE9572F83AF1A6F21D9E60DF57E57884BD3D5EFCAF19D21CC4959D",
+    "category": "metal",
+    "imageKey": "scrap_metal_04"
+  },
+  {
+    "source": "metal_05_copper_wire_02.png",
+    "hash": "CCC380411F884B5C9E2F98964AC4E905E223DE70F171E44C0EB0EFC83E1DBEA6",
+    "category": "metal",
+    "imageKey": "scrap_metal_05"
+  },
+  {
+    "source": "metal_06_aluminium_sheet_01.png",
+    "hash": "19D88847072A08EC747691EFD1A20E0E26CECCFD761D3CBB3BC547B790E4F8B4",
+    "category": "metal",
+    "imageKey": "scrap_metal_06"
+  },
+  {
+    "source": "metal_07_aluminium_sheet_02.png",
+    "hash": "BB19CE6FB03DEBE6861DA8552EDA8EBCD7A97E147754844A3678D4A3A9CE11DD",
+    "category": "metal",
+    "imageKey": "scrap_metal_07"
   }
 ]

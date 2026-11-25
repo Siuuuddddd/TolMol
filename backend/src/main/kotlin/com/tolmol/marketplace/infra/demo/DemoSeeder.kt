@@ -54,9 +54,9 @@ class DemoSeeder(
         Item("Bundled old newspapers","PAPER","35","14","scrap_paper_01","Dry newspapers tied in bundles. Ready for collection from our building."),
         Item("Newspaper stacks from an office","PAPER","65","13","scrap_paper_02","Stored newspaper bundles from an office clean-out. Sold together by estimated weight."),
         Item("Mixed rusty iron fittings","METAL","85","29","scrap_metal_01","Mixed rusty metal pipes, fittings and offcuts. Buyer should inspect and sort at pickup."),
-        Item("Iron rods and offcuts","METAL","140","32",null,"Construction iron rod offcuts in mixed lengths. Please bring suitable loading transport."),
-        Item("Copper wire scrap","METAL","18","540",null,"Mixed copper wire offcuts from electrical work. Final weight and condition checked at pickup."),
-        Item("Aluminium sheet offcuts","METAL","28","130",null,"Mixed aluminium sheet offcuts from fabrication. Edges may be sharp; collect with gloves."),
+        Item("Iron rods and offcuts","METAL","140","32","scrap_metal_02","Construction iron rod offcuts in mixed lengths. Please bring suitable loading transport."),
+        Item("Copper wire scrap","METAL","18","540","scrap_metal_04","Mixed copper wire offcuts from electrical work. Final weight and condition checked at pickup."),
+        Item("Aluminium sheet offcuts","METAL","28","130","scrap_metal_06","Mixed aluminium sheet offcuts from fabrication. Edges may be sharp; collect with gloves."),
         Item("Old steel kitchen utensils","METAL","22","45",null,"Used stainless steel kitchen utensils for scrap recovery. Sold as a mixed lot."),
         Item("Mixed brass fittings","METAL","12","340",null,"Old brass plumbing fittings from a renovation. Rate is per kg after inspection."),
         Item("Used cardboard cartons","CARDBOARD","42","9","scrap_cardboard_01","Empty used cardboard cartons in mixed sizes. Some boxes have tape and printed labels."),
@@ -107,16 +107,23 @@ class DemoSeeder(
         val lots=(0 until 53).map { index ->
             val item=items[index%items.size]
             val lotId=id("lot:$index")
+            // Use both supplied photos across the repeated demo lots for each material.
+            val imageKey=if(index<items.size) item.key else when(item.key) {
+                "scrap_metal_02" -> "scrap_metal_03"
+                "scrap_metal_04" -> "scrap_metal_05"
+                "scrap_metal_06" -> "scrap_metal_07"
+                else -> item.key
+            }
             val deadline=now.plusSeconds(if(index<5) 2700L+index*600 else 7200L+(index*4700L)%248400L)
             val seller=people[sellerIndices[index%sellerIndices.size]]
             val point=auth.position(seller,Role.SELLER)
             if(listings.get(lotId)==null) {
                 listings.insert(Listing(lotId,seller,item.category,item.kg.toBigDecimal(),item.rate.toBigDecimal(),
-                    point.latitude,point.longitude,deadline,"OPEN",0,item.title,item.description,item.key))
+                    point.latitude,point.longitude,deadline,"OPEN",0,item.title,item.description,imageKey))
             } else {
                 // Preserve participant activity and terminal states; refresh only still-open demo lots.
-                db.marketplace.sql.sql("update listings set deadline=?,latitude=?,longitude=?,version=version+1 where id=? and status='OPEN'")
-                    .params(Timestamp.from(deadline),point.latitude,point.longitude,lotId).update()
+                db.marketplace.sql.sql("update listings set deadline=?,latitude=?,longitude=?,image_key=?,version=version+1 where id=? and status='OPEN'")
+                    .params(Timestamp.from(deadline),point.latitude,point.longitude,imageKey,lotId).update()
             }
             listings.get(lotId)!!.also { geoIndex.add(it) }
         }
