@@ -1,0 +1,44 @@
+param([string]$Source = (Join-Path $PSScriptRoot '../../scrap_photos'),
+      [string]$Destination = (Join-Path $PSScriptRoot '../../android/app/src/main/res/drawable-nodpi'))
+$ErrorActionPreference='Stop'
+Add-Type -AssemblyName System.Drawing
+New-Item -ItemType Directory -Force -Path $Source,$Destination | Out-Null
+$manifestPath=Join-Path $PSScriptRoot 'manifest.json'
+$manifest=@()
+if(Test-Path $manifestPath){$manifest=@(Get-Content -Raw $manifestPath | ConvertFrom-Json)}
+$encoder=[Drawing.Imaging.ImageCodecInfo]::GetImageEncoders() | Where-Object MimeType -eq 'image/jpeg'
+foreach($file in (Get-ChildItem $Source -File | Where-Object Extension -Match '^\.(png|jpe?g|webp|bmp)$' | Sort-Object Name)){
+    $hash=(Get-FileHash $file.FullName -Algorithm SHA256).Hash
+    $old=$manifest | Where-Object hash -eq $hash | Select-Object -First 1
+    if($old -and (Test-Path (Join-Path $Destination ($old.imageKey+'.jpg')))){continue}
+    $category=($file.BaseName -split '_')[0].ToLowerInvariant()
+    if($category -notin @('metal','paper','cardboard','plastic','paint','electronics','furniture','other')){$category='other'}
+    $number=1
+    while($manifest.imageKey -contains ('scrap_{0}_{1:00}' -f $category,$number)){$number++}
+    $key=if($old){$old.imageKey}else{'scrap_{0}_{1:00}' -f $category,$number}
+    $image=[Drawing.Image]::FromFile($file.FullName)
+    try{
+        $scale=[Math]::Min(1.0,800.0/[Math]::Max($image.Width,$image.Height))
+        $bitmap=[Drawing.Bitmap]::new([int][Math]::Max(1,$image.Width*$scale),[int][Math]::Max(1,$image.Height*$scale))
+        try{
+            $graphics=[Drawing.Graphics]::FromImage($bitmap)
+            $graphics.Clear([Drawing.Color]::White)
+            $graphics.InterpolationMode=[Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+            $graphics.DrawImage($image,0,0,$bitmap.Width,$bitmap.Height)
+            $graphics.Dispose()
+            $output=Join-Path $Destination ($key+'.jpg')
+            $quality=88
+            do{
+                $parameters=[Drawing.Imaging.EncoderParameters]::new(1)
+                $parameters.Param[0]=[Drawing.Imaging.EncoderParameter]::new([Drawing.Imaging.Encoder]::Quality,[long]$quality)
+                $bitmap.Save($output,$encoder,$parameters)
+                $parameters.Dispose()
+                $quality-=8
+            }while((Get-Item $output).Length -gt 120KB -and $quality -ge 8)
+            if((Get-Item $output).Length -gt 120KB){throw "Image exceeds 120 KB: $($file.Name)"}
+        }finally{$bitmap.Dispose()}
+    }finally{$image.Dispose()}
+    if(-not $old){$manifest+= [pscustomobject]@{source=$file.Name;hash=$hash;category=$category;imageKey=$key}}
+}
+ConvertTo-Json -InputObject @($manifest) -Depth 4 | Set-Content -Encoding utf8NoBOM $manifestPath
+Write-Output ("Imported catalog: {0} photos. JPEG fallback (native WebP encoder unavailable)." -f $manifest.Count)

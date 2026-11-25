@@ -129,3 +129,13 @@ api.example.com {
 ```
 
 **Smoke test.** Register one seller and one buyer, log in and update both locations within 20 km. Publish a lot, find it in discovery, bid, and have the seller accept. Open the winning thread, send a message via /ws, and check recipient delivery. Inspect the weight and confirm the deal as the other participant. Check that the deal is COMPLETED. Test live provider delivery separately with the app closed on a registered device.
+
+## SCRAP PHOTOS
+
+Original supplied photos are in scrap_photos/. Add more with a category prefix (metal_, paper_, cardboard_, plastic_, paint_, electronics_, furniture_, other_), then run from the repository root:
+
+```powershell
+pwsh -File tools/import_images/import.ps1
+```
+
+The rerunnable importer keeps a hash manifest and stable image keys, skips previously imported photos, scales the longest side to <=800px and writes JPEGs <=120KB to drawable-nodpi (native WebP encoding is unavailable). Originals are unchanged. Unknown categories map to OTHER. No eBay screenshots, web downloads or network image loader are included. These supplied photos have no recorded license: confirm your right to use them before a public release.

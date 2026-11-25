@@ -1,0 +1,104 @@
+[
+  {
+    "source": "cardboard_01_boxes.png",
+    "hash": "546FFE1755C07E03AE2D3961ADF8C4554F819E6917E732CCCDCAE11A4886FCD8",
+    "category": "cardboard",
+    "imageKey": "scrap_cardboard_01"
+  },
+  {
+    "source": "cardboard_02_boxes.png",
+    "hash": "55AE658B283D9E246F79510EC39C2F34948EAFA2A7B5BEE4E6F2C6A631C5166E",
+    "category": "cardboard",
+    "imageKey": "scrap_cardboard_02"
+  },
+  {
+    "source": "electronics_01_washing.png",
+    "hash": "AC886A5D7876C8A4A1895CBB4FA1A2FC8E69662A85AF42CFBC60CBE0365CE666",
+    "category": "electronics",
+    "imageKey": "scrap_electronics_01"
+  },
+  {
+    "source": "electronics_02_washing.png",
+    "hash": "BEDD176ECDABAF4E8DD3535955F804E678812203F66487A562E2C383C8FB53A6",
+    "category": "electronics",
+    "imageKey": "scrap_electronics_02"
+  },
+  {
+    "source": "electronics_03_ewaste.png",
+    "hash": "81D2D6BEF9532D8759E70F3AB2070092B0822DE5C186685A25E459E44FC59C3D",
+    "category": "electronics",
+    "imageKey": "scrap_electronics_03"
+  },
+  {
+    "source": "electronics_04_ewaste.png",
+    "hash": "C53E211B7BAE4666774771E11F4F3B3547545150F8360DF1E04C8E2E09FBF27B",
+    "category": "electronics",
+    "imageKey": "scrap_electronics_04"
+  },
+  {
+    "source": "electronics_05_crt.png",
+    "hash": "058FC3C0A5B96B4E278E45FD4A60E49678BEDD66D08899955109315CD476DF39",
+    "category": "electronics",
+    "imageKey": "scrap_electronics_05"
+  },
+  {
+    "source": "metal_01_rusty_scrap.png",
+    "hash": "9BF00236C24D50DD7CA830735CEA965B63834150E31DA449D7F91828981090F4",
+    "category": "metal",
+    "imageKey": "scrap_metal_01"
+  },
+  {
+    "source": "other_01_textile.png",
+    "hash": "7ABE74305F76D1DE77125466E21D52547F4A3ABFE6E6E3DB1E872D962B18C628",
+    "category": "other",
+    "imageKey": "scrap_other_01"
+  },
+  {
+    "source": "other_02_textile.png",
+    "hash": "8CD4F1F1317C7BCA16938E2CA7D2CF325BF6831A1F9551E2BCF88C0EB7C9490D",
+    "category": "other",
+    "imageKey": "scrap_other_02"
+  },
+  {
+    "source": "other_03_cement.png",
+    "hash": "A54703C7CD811D95B2FC8A9EFBD1CB9DFF0FC3EE512EA734B190ECB4636590EA",
+    "category": "other",
+    "imageKey": "scrap_other_03"
+  },
+  {
+    "source": "other_04_cement.png",
+    "hash": "B782C4DD5EF130EFE1B7100414C5E7FCC4B8E42B1CE30B89587BFDD378E30275",
+    "category": "other",
+    "imageKey": "scrap_other_04"
+  },
+  {
+    "source": "paint_01_drums.png",
+    "hash": "F0EBF6877DBD958E063DB7AE57ACA56BCAE3CAAB765F14D895F9CD4DF87B5E02",
+    "category": "paint",
+    "imageKey": "scrap_paint_01"
+  },
+  {
+    "source": "paint_02_drums.png",
+    "hash": "623FBA34BA31D8B150C2D0147B0539425612A799A5C90D6888DC5AEB49173607",
+    "category": "paint",
+    "imageKey": "scrap_paint_02"
+  },
+  {
+    "source": "paint_03_buckets.png",
+    "hash": "E42870762E1BC89FD958D97DD311A40DB3357B9D636D027F25526E68A8D914BB",
+    "category": "paint",
+    "imageKey": "scrap_paint_03"
+  },
+  {
+    "source": "paper_01_newspaper.png",
+    "hash": "CE41888CA4A0A231F466E5A3D7BD3240CBAB762C70E286F45A2557399FBDDD38",
+    "category": "paper",
+    "imageKey": "scrap_paper_01"
+  },
+  {
+    "source": "paper_02_newspaper.png",
+    "hash": "CE136C5E63C695017C4A7F7770897BE5B01CF2AF4DD49D1D20DA7EE75DAC3D7B",
+    "category": "paper",
+    "imageKey": "scrap_paper_02"
+  }
+]
