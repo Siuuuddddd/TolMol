@@ -52,7 +52,7 @@ fun DealScreen(vm: DealViewModel, id: String, user: String) {
     val state by vm.state.collectAsStateWithLifecycle()
     var input by rememberSaveable { mutableStateOf("") }
     var confirmCancel by remember { mutableStateOf(false) }
-    LaunchedEffect(id) {
+    LaunchedEffect(vm, id) {
         vm.refresh(id)
         vm.live.collect { if (it is LiveUpdate.Connected || it is LiveUpdate.Event && it.aggregate == id) vm.refresh(id) }
     }

@@ -13,6 +13,7 @@ class DiscoveryRepositoryTest {
             JsonPrimitive(BigDecimal("17.45")), "2026-11-25T20:00:00Z", "OPEN")
         var watched = false
         val api = object : DiscoveryApi {
+            override suspend fun detail(id: String) = lot
             override suspend fun nearby() = listOf(lot)
             override suspend fun watched() = if (watched) listOf(lot) else emptyList()
             override suspend fun watch(id: String) { assertEquals(lot.id, id); watched = true }

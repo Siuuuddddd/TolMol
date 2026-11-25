@@ -80,7 +80,7 @@ fun ConversationsScreen(vm: ConversationsViewModel, user: String, listing: Strin
 fun ChatThreadScreen(vm: ChatViewModel, id: String, user: String) {
     val state by vm.state.collectAsStateWithLifecycle()
     var draft by rememberSaveable { mutableStateOf("") }
-    LaunchedEffect(id) {
+    LaunchedEffect(vm, id) {
         vm.refresh(id)
         vm.live.collect {
             val listing = vm.state.value.value?.conversation?.listing

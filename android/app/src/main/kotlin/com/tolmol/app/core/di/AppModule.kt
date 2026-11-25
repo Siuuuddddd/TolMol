@@ -32,6 +32,8 @@ import com.tolmol.app.feature.discovery.data.DiscoveryApi
 import com.tolmol.app.feature.discovery.data.DiscoveryRepositoryImpl
 import com.tolmol.app.feature.discovery.domain.DiscoveryRepository
 import com.tolmol.app.feature.discovery.domain.DiscoveryUseCase
+import com.tolmol.app.feature.discovery.domain.FeedUseCase
+import com.tolmol.app.feature.discovery.presentation.LotDetailViewModel
 import com.tolmol.app.feature.discovery.presentation.DiscoveryViewModel
 import com.tolmol.app.feature.listing.data.ListingApi
 import com.tolmol.app.feature.listing.data.ListingRepositoryImpl
@@ -76,6 +78,8 @@ val appModule = module {
     single { get<Retrofit>().create(DiscoveryApi::class.java) }
     singleOf(::DiscoveryRepositoryImpl) bind DiscoveryRepository::class
     factoryOf(::DiscoveryUseCase)
+    factoryOf(::FeedUseCase)
+    viewModelOf(::LotDetailViewModel)
     viewModelOf(::DiscoveryViewModel)
 
     single { get<Retrofit>().create(BiddingApi::class.java) }

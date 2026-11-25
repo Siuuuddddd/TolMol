@@ -142,7 +142,7 @@ private fun MarketplaceNavigation(account: Account, role: Role, changeRole: (() 
                     entry<AuctionRoute> { lot ->
                         BiddingScreen(koinViewModel(), lot.id, lot.category, lot.weight, lot.opening, lot.deadline,
                             { stack.add(OpenChatRoute(lot.id)) },
-                            { stack.add(DealRoute(lot.id)) })
+                            { stack.add(DealRoute(lot.id)) }, details = koinViewModel())
                     }
                     entry<PublishRoute> { PublishScreen(koinViewModel(), back) }
                     entry<OffersRoute> { lot ->
@@ -157,7 +157,7 @@ private fun MarketplaceNavigation(account: Account, role: Role, changeRole: (() 
                     entry<OpenChatRoute> { route ->
                         val vm: OpenChatViewModel = koinViewModel()
                         val state by vm.state.collectAsStateWithLifecycle()
-                        LaunchedEffect(route.listing) { vm.open(route.listing) }
+                        LaunchedEffect(vm, route.listing) { vm.open(route.listing) }
                         LaunchedEffect(state.value) { state.value?.let { stack[stack.lastIndex] = ChatRoute(it.id) } }
                         Screen("Opening conversation") { ScreenFeedback(state) { vm.open(route.listing) } }
                     }

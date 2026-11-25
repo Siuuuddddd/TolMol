@@ -7,13 +7,14 @@ import kotlinx.serialization.json.*
 import java.math.BigDecimal
 
 class DiscoveryRepositoryImpl(private val api: DiscoveryApi) : DiscoveryRepository {
+    override suspend fun detail(id: String) = request { api.detail(id).toDomain() }
     override suspend fun nearby() = request { api.nearby().map { it.toDomain() } }
     override suspend fun watched() = request { api.watched().map { it.toDomain() } }
     override suspend fun watch(id: String, enabled: Boolean) = request {
         if (enabled) api.watch(id) else api.unwatch(id)
     }
 
-    private fun NearbyLotDto.toDomain() = NearbyLot(id, category, weight.content.toBigDecimal(), startingRate.content.toBigDecimal(), deadline, status)
+    private fun NearbyLotDto.toDomain() = NearbyLot(id, category, weight.content.toBigDecimal(), startingRate.content.toBigDecimal(), deadline, status, title ?: category + " scrap lot",description.orEmpty(),imageKey,distanceKm,sellerDisplayName,sellerMemberSince)
 
     private suspend fun <T> request(action: suspend () -> T): T = try { action() }
     catch (error: CancellationException) { throw error }

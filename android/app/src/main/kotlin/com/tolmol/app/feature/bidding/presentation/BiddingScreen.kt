@@ -4,6 +4,8 @@ import com.tolmol.app.core.ui.PixelButton as Button
 import com.tolmol.app.core.ui.PixelOutlinedButton as OutlinedButton
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -75,12 +77,16 @@ fun bidError(message: String, now: Instant): String {
 
 @Composable
 fun BiddingScreen(vm: BiddingViewModel, id: String, category: String, weight: String, opening: String,
-                  deadline: String, openChat: (() -> Unit)?, openDeal: (() -> Unit)?) {
+                  deadline: String, openChat: (() -> Unit)?, openDeal: (() -> Unit)?,
+                  details: com.tolmol.app.feature.discovery.presentation.LotDetailViewModel) {
     val state by vm.state.collectAsStateWithLifecycle()
+    val detailState by details.state.collectAsStateWithLifecycle()
+    val lot=detailState.lot
+    LaunchedEffect(details, id) { details.refresh(id) }
     var rate by rememberSaveable { mutableStateOf("") }
     var now by remember { mutableStateOf(Instant.now()) }
-    val end = remember(deadline) { Instant.parse(deadline) }
-    DisposableEffect(id) {
+    val end = remember(lot?.deadline,deadline) { Instant.parse(lot?.deadline ?: deadline) }
+    DisposableEffect(vm, id) {
         vm.observe(id)
         onDispose { vm.stop(id) }
     }
@@ -91,8 +97,28 @@ fun BiddingScreen(vm: BiddingViewModel, id: String, category: String, weight: St
         }
     }
     val auction = state.value
-    Screen(category) {
-        Text("$weight kg estimated")
+    Screen(lot?.title ?: category) {
+        if(detailState.loading) LinearProgressIndicator(Modifier.fillMaxWidth())
+        ScrapImage(lot?.imageKey,lot?.category ?: category,Modifier.fillMaxWidth().aspectRatio(1.3f).clip(MaterialTheme.shapes.large))
+        if(detailState.error!=null) {
+            Text(detailState.error!!,color=MaterialTheme.colorScheme.error)
+            TextButton({details.refresh(id)}) {Text("Retry details")}
+        }
+        lot?.let {
+            Text(it.category.lowercase().replaceFirstChar { c -> c.titlecase() },style=MaterialTheme.typography.labelLarge)
+            Text(it.sellerDisplayName,style=MaterialTheme.typography.titleMedium)
+            val member=it.sellerMemberSince?.let { date -> runCatching {
+                java.time.format.DateTimeFormatter.ofPattern("MMM yyyy",java.util.Locale.ENGLISH)
+                    .withZone(java.time.ZoneOffset.UTC).format(Instant.parse(date))
+            }.getOrNull() }
+            Text(member?.let { date -> "Member since $date" } ?: "Member of TolMol",style=MaterialTheme.typography.bodySmall)
+            it.distanceKm?.let { distance -> Text(String.format(java.util.Locale.ENGLISH,"About %.1f km away",distance)) }
+            Text(it.description.ifBlank { "Inspect the lot and confirm its condition at pickup." })
+            OutlinedButton({details.watch(id)},enabled=!detailState.watching && (it.status=="OPEN" || detailState.watched)) {
+                Text(if(detailState.watched) "Watching · Unwatch" else "Watch lot")
+            }
+        }
+        Text((lot?.weight?.toPlainString() ?: weight) + " kg estimated")
         Text("Opening rate ₹$opening/kg")
         Text("Highest bid: ${auction?.highest?.let { "₹${it.toPlainString()}/kg" } ?: "No bids yet"}")
         Text(if (now.isBefore(end)) "Time left ${remaining(end, now)}" else "Auction deadline passed")

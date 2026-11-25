@@ -5,7 +5,7 @@ import retrofit2.http.*
 
 import kotlinx.serialization.json.JsonPrimitive
 
-@Serializable data class ListingDto(val id: String, val category: String, val weight: JsonPrimitive, val startingRate: JsonPrimitive, val deadline: String, val status: String)
+@Serializable data class ListingDto(val id: String, val category: String, val weight: JsonPrimitive, val startingRate: JsonPrimitive, val deadline: String, val status: String,val title: String? = null,val description: String? = null,val imageKey: String? = null)
 @Serializable data class OfferDto(val id: String, val buyer: String, val rate: JsonPrimitive, val createdAt: String)
 @Serializable data class AwardDto(val bidId: String)
 

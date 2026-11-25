@@ -25,8 +25,8 @@ class ListingViewModel(private val listings: ListingUseCase) : ScreenViewModel<L
 }
 
 class PublishViewModel(private val listings: ListingUseCase) : ScreenViewModel<Listing>() {
-    fun publish(category: String, weight: BigDecimal, opening: BigDecimal, hours: Long) = load {
-        listings.publish(category.trim(), weight, opening, Instant.now().plusSeconds(hours * 3600).toString())
+    fun publish(category: String, weight: BigDecimal, opening: BigDecimal, hours: Long,title: String,description: String) = load {
+        listings.publish(category.trim(), weight, opening, Instant.now().plusSeconds(hours * 3600).toString(),title.trim(),description.trim())
     }
 }
 
@@ -51,7 +51,7 @@ fun MyListingsScreen(vm: ListingViewModel, publish: () -> Unit, open: (Listing) 
         ScreenFeedback(state) { vm.refresh() }
         if (state.value?.isEmpty() == true) Text("Your published scrap lots appear here.")
         for (listing in state.value.orEmpty()) {
-            RowCard(listing.category, "${listing.weight.toPlainString()} kg · ${listing.status.label()}") { open(listing) }
+            RowCard(listing.title ?: listing.category, "${listing.weight.toPlainString()} kg · ${listing.status.label()}") { open(listing) }
         }
         if (state.value.orEmpty().size >= 25) TextButton({ vm.more() }, enabled = !state.loading) { Text("Load more") }
     }
@@ -60,20 +60,32 @@ fun MyListingsScreen(vm: ListingViewModel, publish: () -> Unit, open: (Listing) 
 @Composable
 fun PublishScreen(vm: PublishViewModel, published: () -> Unit) {
     val state by vm.state.collectAsStateWithLifecycle()
-    var category by rememberSaveable { mutableStateOf("") }
+    var category by rememberSaveable { mutableStateOf("OTHER") }
+    var title by rememberSaveable { mutableStateOf("") }
+    var description by rememberSaveable { mutableStateOf("") }
+    var categoryOpen by remember { mutableStateOf(false) }
     var weight by rememberSaveable { mutableStateOf("") }
     var rate by rememberSaveable { mutableStateOf("") }
     var hours by rememberSaveable { mutableStateOf("24") }
     val kg = weight.toBigDecimalOrNull()
     val opening = rate.toBigDecimalOrNull()
     val duration = hours.toLongOrNull()
-    val valid = category.isNotBlank() && kg?.signum() == 1 && opening?.signum() == 1 && duration != null && duration in 1L..8760L
+    val valid = title.trim().length in 1..160 && description.length<=2000 && category.isNotBlank() && kg?.signum() == 1 && opening?.signum() == 1 && duration != null && duration in 1L..8760L
     val submit = {
-        if (valid) vm.publish(category, requireNotNull(kg), requireNotNull(opening), requireNotNull(duration))
+        if (valid) vm.publish(category, requireNotNull(kg), requireNotNull(opening), requireNotNull(duration),title,description)
     }
     LaunchedEffect(state.value) { if (state.value != null) published() }
     Screen("Publish scrap") {
-        OutlinedTextField(category, { category = it }, Modifier.fillMaxWidth(), label = { Text("Scrap category") }, singleLine = true)
+        OutlinedTextField(title,{title=it.take(160)},Modifier.fillMaxWidth(),label={Text("Title")},singleLine=true)
+        OutlinedTextField(description,{description=it.take(2000)},Modifier.fillMaxWidth(),label={Text("Description")},minLines=3,maxLines=6)
+        Box {
+            OutlinedButton({categoryOpen=true}) {Text("Category: "+category.lowercase().replaceFirstChar { it.titlecase() })}
+            DropdownMenu(categoryOpen,{categoryOpen=false}) {
+                com.tolmol.app.feature.discovery.domain.ScrapCategory.entries.forEach { item ->
+                    DropdownMenuItem(text={Text(item.label)},onClick={category=item.name;categoryOpen=false})
+                }
+            }
+        }
         DecimalField(weight, { weight = it }, "Estimated kg")
         DecimalField(rate, { rate = it }, "Opening rate in ₹ per kg")
         OutlinedTextField(hours, { hours = it }, Modifier.fillMaxWidth(), label = { Text("Auction deadline in hours") },
@@ -94,7 +106,7 @@ private fun DecimalField(value: String, update: (String) -> Unit, title: String)
 fun OffersScreen(vm: OffersViewModel, id: String, category: String, status: String, deadline: String, chat: (() -> Unit)?, deal: (() -> Unit)?) {
     val state by vm.state.collectAsStateWithLifecycle()
     var confirm by remember { mutableStateOf<Offer?>(null) }
-    LaunchedEffect(id) { vm.refresh(id) }
+    LaunchedEffect(vm, id) { vm.refresh(id) }
     val open = status == "OPEN" && !vm.awarded && Instant.now().isBefore(Instant.parse(deadline))
     Screen(category) {
         if (chat != null) OutlinedButton(chat) { Text("Conversations") }
