@@ -42,8 +42,8 @@ class AuthRepositoryImpl(private val api: AuthApi, private val session: SessionS
         login(email,password)
     }
 
-    override suspend fun social(provider: String, token: String): Account = authRequest("Provider sign-in could not be verified. Retry.") {
-        val issued = api.social(SocialLoginDto(provider,token)).accessToken
+    override suspend fun signInWithGoogle(idToken: String): Account = authRequest("Google could not verify this sign-in. Please try again.") {
+        val issued = api.google(GoogleLoginDto(idToken)).accessToken
         val profile = account(issued)
         session.save(issued)
         profile

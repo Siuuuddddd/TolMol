@@ -45,7 +45,7 @@ fun TolMolNavigation(auth: AuthViewModel = koinViewModel()) {
     val state by auth.state.collectAsStateWithLifecycle()
     var register by rememberSaveable { mutableStateOf(false) }
     var showForm by rememberSaveable { mutableStateOf(false) }
-    val providerSignIn = rememberProviderSignIn(auth)
+    val googleSignIn = rememberGoogleSignIn(auth)
     val role = state.role
     val account = state.account
     LaunchedEffect(account?.id) {
@@ -65,7 +65,7 @@ fun TolMolNavigation(auth: AuthViewModel = koinViewModel()) {
             signIn = {
                 auth.clearError()
                 // The primary sign-in action uses the Google account chooser.
-                providerSignIn("GOOGLE")
+                googleSignIn()
             },
             register = {
                 auth.clearError()

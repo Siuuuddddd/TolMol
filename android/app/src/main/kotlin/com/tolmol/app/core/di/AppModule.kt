@@ -7,6 +7,7 @@ import com.tolmol.app.feature.auth.data.AuthApi
 import com.tolmol.app.feature.auth.data.AuthRepositoryImpl
 import com.tolmol.app.feature.auth.domain.AuthRepository
 import com.tolmol.app.feature.auth.domain.AuthUseCase
+import com.tolmol.app.feature.auth.domain.GoogleSignInUseCase
 import com.tolmol.app.feature.auth.presentation.AuthViewModel
 import com.tolmol.app.feature.bidding.data.BiddingApi
 import com.tolmol.app.feature.bidding.data.BiddingRepositoryImpl
@@ -64,6 +65,7 @@ val appModule = module {
     single { get<Retrofit>().create(AuthApi::class.java) }
     singleOf(::AuthRepositoryImpl) bind AuthRepository::class
     factoryOf(::AuthUseCase)
+    factoryOf(::GoogleSignInUseCase)
     viewModelOf(::AuthViewModel)
 
     single { get<Retrofit>().create(LocationApi::class.java) }

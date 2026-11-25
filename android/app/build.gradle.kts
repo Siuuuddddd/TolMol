@@ -1,4 +1,5 @@
 import java.net.URI
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -21,11 +22,12 @@ fun endpoint(property: String, fallback: String): String {
     return "\"$value\""
 }
 
-fun providerConfig(property: String): String {
-    val value = providers.gradleProperty(property).orElse("").get()
-    require(value.all { it.isLetterOrDigit() || it in "._-" }) { "Invalid provider setting: $property" }
-    return "\"$value\""
+// Local-only OAuth configuration; never commit local.properties or provider credentials.
+val localProperties = Properties().apply {
+    rootProject.file("local.properties").takeIf { it.isFile }?.inputStream()?.use { load(it) }
 }
+val googleWebClientId = localProperties.getProperty("GOOGLE_WEB_CLIENT_ID", "").trim()
+require(googleWebClientId.all { it.isLetterOrDigit() || it in "._-" }) { "Invalid GOOGLE_WEB_CLIENT_ID in local.properties" }
 
 android {
     namespace = "com.tolmol.app"
@@ -37,9 +39,7 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "0.1.0"
-        buildConfigField("String", "GOOGLE_CLIENT_ID", providerConfig("tolmolGoogleClientId"))
-        buildConfigField("String", "FACEBOOK_APP_ID", providerConfig("tolmolFacebookAppId"))
-        buildConfigField("String", "FACEBOOK_CLIENT_TOKEN", providerConfig("tolmolFacebookClientToken"))
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
     }
 
     buildFeatures { compose = true; buildConfig = true }
@@ -59,7 +59,6 @@ dependencies {
     implementation(libs.credentials)
     implementation(libs.credentials.play)
     implementation(libs.googleid)
-    implementation(libs.facebook)
     implementation(libs.activity)
     implementation(libs.material3)
     implementation(libs.navigation)

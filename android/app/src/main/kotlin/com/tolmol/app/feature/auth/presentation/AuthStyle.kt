@@ -25,21 +25,21 @@ val authInk = Color(0xFF121731)
 val authCream = Color(0xFFFFF8E7)
 
 @Composable
-fun rememberProviderSignIn(viewModel: AuthViewModel): (String) -> Unit {
+fun rememberGoogleSignIn(viewModel: AuthViewModel): () -> Unit {
     val activity = LocalContext.current.findActivity() as? MainActivity
     val scope = rememberCoroutineScope()
     var pending by remember { mutableStateOf(false) }
 
-    return launch@ { provider ->
+    return launch@ {
         if (pending || viewModel.state.value.loading) return@launch
-        val controller = activity?.socialSignIn
+        val controller = activity?.googleSignIn
         if (controller == null) { viewModel.showError("Sign-in is unavailable. Reopen TolMol."); return@launch }
         pending = true
         viewModel.clearError()
         scope.launch {
             try {
-                val token = if (provider == "GOOGLE") controller.google() else controller.facebook()
-                viewModel.social(provider,token)
+                val token = controller.google()
+                viewModel.google(token)
             } catch (_: CancellationException) {
                 // Dismissing the account chooser returns to the current screen.
             } catch (error: Exception) {
@@ -51,7 +51,7 @@ fun rememberProviderSignIn(viewModel: AuthViewModel): (String) -> Unit {
 
 @Composable
 fun SocialButtons(viewModel: AuthViewModel, enabled: Boolean, label: String = "or continue with") {
-    val launch = rememberProviderSignIn(viewModel)
+    val launch = rememberGoogleSignIn(viewModel)
     val active = enabled
     Column(verticalArrangement = Arrangement.spacedBy(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -60,17 +60,11 @@ fun SocialButtons(viewModel: AuthViewModel, enabled: Boolean, label: String = "o
             HorizontalDivider(Modifier.weight(1f))
         }
         Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-            OutlinedIconButton({ launch("GOOGLE") }, enabled = active,
+            OutlinedIconButton({ launch() }, enabled = active,
                 modifier = Modifier.size(52.dp), shape = CircleShape,
                 colors = IconButtonDefaults.outlinedIconButtonColors(containerColor = Color.White),
                 border = BorderStroke(1.dp,Color.LightGray)) {
                 Image(painterResource(R.drawable.google_sign_in),"Continue with Google",Modifier.size(24.dp))
-            }
-            OutlinedIconButton({ launch("FACEBOOK") }, enabled = active,
-                modifier = Modifier.size(52.dp), shape = CircleShape,
-                colors = IconButtonDefaults.outlinedIconButtonColors(containerColor = Color.White),
-                border = BorderStroke(1.dp,Color.LightGray)) {
-                Image(painterResource(com.facebook.common.R.drawable.com_facebook_favicon_blue),"Continue with Facebook",Modifier.size(28.dp))
             }
         }
 

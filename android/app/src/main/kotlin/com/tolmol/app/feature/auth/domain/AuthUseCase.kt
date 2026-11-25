@@ -16,8 +16,12 @@ interface AuthRepository {
     suspend fun login(email: String, password: String): Account
     suspend fun register(email: String, password: String, roles: Set<Role>): Account
     suspend fun registerProfile(name: String, email: String, password: String): Account
-    suspend fun social(provider: String, token: String): Account
+    suspend fun signInWithGoogle(idToken: String): Account
     suspend fun logout()
 }
 
 class AuthUseCase(repository: AuthRepository) : AuthRepository by repository
+
+class GoogleSignInUseCase(private val repository: AuthRepository) {
+    suspend operator fun invoke(idToken: String): Account = repository.signInWithGoogle(idToken)
+}

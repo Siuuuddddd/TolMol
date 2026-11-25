@@ -22,7 +22,7 @@ private fun createHttpClient(session: SessionStore): OkHttpClient = OkHttpClient
         .pingInterval(30, TimeUnit.SECONDS)
         .addInterceptor { chain ->
             val original = chain.request()
-            val publicAuth = original.url.encodedPath.startsWith("/api/auth/")
+            val publicAuth = original.url.encodedPath.startsWith("/api/auth/") || original.url.encodedPath == "/auth/google"
             val token = if (publicAuth || original.header("Authorization") != null) null
                 else runBlocking { session.read() }
             val request = if (token == null) original

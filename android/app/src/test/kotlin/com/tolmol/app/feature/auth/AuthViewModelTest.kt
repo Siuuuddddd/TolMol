@@ -11,10 +11,12 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AuthViewModelTest {
-    @Test fun loginShowsAvailableRolesAndLogoutClearsThem() = runTest {
+    @Test fun passwordAndGoogleSessionsKeepRolesAndHandleRetry() = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
         try {
             val account = Account("account-id", setOf(Role.BUYER))
+            var receivedIdToken: String? = null
+            var googleFailure = false
             val repo = object : AuthRepository {
                 override val tokenChanges = MutableStateFlow<String?>(null)
                 override suspend fun restore(): Account? = null
@@ -24,10 +26,15 @@ class AuthViewModelTest {
                 }
                 override suspend fun register(email: String, password: String, roles: Set<Role>) = account
                 override suspend fun registerProfile(name: String, email: String, password: String) = account
-                override suspend fun social(provider: String, token: String) = account
+                override suspend fun signInWithGoogle(idToken: String): Account {
+                    receivedIdToken = idToken
+                    if (googleFailure) throw AuthError.RequestFailed("Check your connection and retry.")
+                    tokenChanges.value = "google-session-jwt"
+                    return account
+                }
                 override suspend fun logout() { tokenChanges.value = null }
             }
-            val vm = AuthViewModel(AuthUseCase(repo))
+            val vm = AuthViewModel(AuthUseCase(repo),GoogleSignInUseCase(repo))
             runCurrent()
             vm.login("buyer@example.test", "valid password")
             runCurrent()
@@ -39,6 +46,19 @@ class AuthViewModelTest {
             vm.logout()
             runCurrent()
             assertNull(vm.state.value.account)
+            googleFailure = true
+            vm.google("provider-id-token")
+            runCurrent()
+            assertFalse(vm.state.value.loading)
+            assertNotNull(vm.state.value.error)
+            assertNull(vm.state.value.account)
+            googleFailure = false
+            vm.google("provider-id-token")
+            runCurrent()
+            assertEquals("provider-id-token",receivedIdToken)
+            assertEquals(account,vm.state.value.account)
+            assertNull(vm.state.value.error)
+            assertNull(vm.state.value.role)
         } finally { Dispatchers.resetMain() }
     }
 }

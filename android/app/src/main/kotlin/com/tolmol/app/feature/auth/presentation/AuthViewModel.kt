@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 
 data class AuthUiState(val loading: Boolean = true, val account: Account? = null, val role: Role? = null, val error: String? = null)
 
-class AuthViewModel(private val auth: AuthUseCase) : ViewModel() {
+class AuthViewModel(private val auth: AuthUseCase, private val googleSignIn: GoogleSignInUseCase) : ViewModel() {
     private val mutable = MutableStateFlow(AuthUiState())
     val state = mutable.asStateFlow()
 
@@ -28,7 +28,7 @@ class AuthViewModel(private val auth: AuthUseCase) : ViewModel() {
     fun login(email: String, password: String) = submit { auth.login(email, password) }
     fun register(email: String, password: String, roles: Set<Role>) = submit { auth.register(email, password, roles) }
     fun registerProfile(name: String, email: String, password: String) = submit { auth.registerProfile(name,email,password) }
-    fun social(provider: String, token: String) = submit { auth.social(provider,token) }
+    fun google(idToken: String) = submit { googleSignIn(idToken) }
     fun showError(message: String) { mutable.value = mutable.value.copy(loading = false,error = message) }
     fun clearError() { mutable.value = mutable.value.copy(error = null) }
 
