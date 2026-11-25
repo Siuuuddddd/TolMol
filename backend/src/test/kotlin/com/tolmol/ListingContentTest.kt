@@ -17,6 +17,8 @@ class ListingContentTest : MarketFixture() {
         assertEquals("Rusty mixed iron",detail.title)
         assertEquals("scrap_metal_01",detail.imageKey)
         assertTrue(detail.distanceKm!! in 0.5..2.0)
+        assertTrue(detail.distanceKm!!.toBigDecimal().stripTrailingZeros().scale() <= 1,
+            "Public distance must not reveal precise pickup location")
         assertEquals(detail,market.feedDetails(buyer).first { it.lot.id==lot.id }.toDto())
         val fields=detail.javaClass.declaredFields.map { it.name }
         assertFalse("latitude" in fields)
