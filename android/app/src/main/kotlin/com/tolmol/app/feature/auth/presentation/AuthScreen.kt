@@ -1,11 +1,12 @@
 package com.tolmol.app.feature.auth.presentation
 
+import com.tolmol.app.core.ui.PixelButton as Button
+
 import android.util.Patterns
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -36,28 +37,23 @@ fun AuthForm(state: AuthUiState, register: Boolean, viewModel: AuthViewModel, to
         if (!canSubmit || state.loading) return
         if (register) viewModel.registerProfile(name,email,password) else viewModel.login(email,password)
     }
-    MaterialTheme(
-        colorScheme = lightColorScheme(primary = authBlue,onPrimary = androidx.compose.ui.graphics.Color.White,
-            background = authCream,surface = authCream,onSurface = authInk,onBackground = authInk,
-            outline = authInk),
-    ) {
-        Surface(Modifier.fillMaxSize(), color = authBlue, contentColor = authInk) {
-            Column(Modifier.fillMaxSize().background(authBlue).statusBarsPadding().navigationBarsPadding().verticalScroll(rememberScrollState()).imePadding()) {
+    Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background, contentColor = MaterialTheme.colorScheme.onBackground) {
+            Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).statusBarsPadding().navigationBarsPadding().verticalScroll(rememberScrollState()).imePadding()) {
                 Box(Modifier.fillMaxWidth().height(210.dp)) {
-                    Image(painterResource(R.drawable.registration_mailbox),null,Modifier.matchParentSize(),contentScale = ContentScale.Crop)
-                    Text("TolMol",Modifier.padding(24.dp),fontFamily = authPixelFont,fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,fontSize = 38.sp,
-                        color = androidx.compose.ui.graphics.Color.White)
+                    Image(painterResource(R.drawable.scrap_conveyor),null,Modifier.matchParentSize(),contentScale = ContentScale.Crop)
+                    Text("TolMol",Modifier.padding(24.dp),fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,fontSize = 38.sp,
+                        color = MaterialTheme.colorScheme.primary)
                 }
-                Column(Modifier.fillMaxWidth().background(authCream).padding(horizontal = 24.dp,vertical = 20.dp),
+                Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background).padding(horizontal = 24.dp,vertical = 20.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(if (register) "Create an account" else "Sign in",fontFamily = authPixelFont,fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,fontSize = 30.sp,lineHeight = 34.sp)
+                    Text(if (register) "Create an account" else "Sign in",fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,fontSize = 30.sp,lineHeight = 34.sp)
                     if (register) {
                         Text("Fill in your information or continue with a social account.",style = MaterialTheme.typography.bodyMedium)
                         AuthField(name,{name=it},"Name",KeyboardType.Text)
                     }
                     AuthField(email,{email=it},"Email",KeyboardType.Email)
                     OutlinedTextField(password,{password=it},Modifier.fillMaxWidth(),
-                        label = {Text("Password")},singleLine = true,shape = RoundedCornerShape(5.dp),
+                        label = {Text("Password")},singleLine = true,shape = MaterialTheme.shapes.small,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
                         trailingIcon = {TextButton({visible=!visible}) {Text(if (visible) "Hide" else "Show")}})
@@ -70,8 +66,8 @@ fun AuthForm(state: AuthUiState, register: Boolean, viewModel: AuthViewModel, to
                     }
                     if (state.loading) LinearProgressIndicator(Modifier.fillMaxWidth())
                     Button({submit()},Modifier.fillMaxWidth().heightIn(min = 52.dp),
-                        enabled = canSubmit && !state.loading,shape = RoundedCornerShape(5.dp)) {
-                        Text(if (register) "Create account" else "Sign in",fontFamily = authPixelFont,fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,fontSize = 22.sp)
+                        enabled = canSubmit && !state.loading) {
+                        Text(if (register) "Create account" else "Sign in",fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,fontSize = 22.sp)
                     }
                     SocialButtons(viewModel,!state.loading,if (register) "or sign up with" else "or continue with")
                     TextButton(toggleMode,enabled = !state.loading) {
@@ -80,12 +76,11 @@ fun AuthForm(state: AuthUiState, register: Boolean, viewModel: AuthViewModel, to
                 }
             }
         }
-    }
 }
 
 @Composable
 private fun AuthField(value: String, change: (String)->Unit, title: String, type: KeyboardType) {
     OutlinedTextField(value,change,Modifier.fillMaxWidth(),label = {Text(title)},
-        singleLine = true,shape = RoundedCornerShape(5.dp),
+        singleLine = true,shape = MaterialTheme.shapes.small,
         keyboardOptions = KeyboardOptions(keyboardType = type))
 }

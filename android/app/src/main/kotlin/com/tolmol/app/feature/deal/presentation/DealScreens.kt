@@ -1,5 +1,8 @@
 package com.tolmol.app.feature.deal.presentation
 
+import com.tolmol.app.core.ui.PixelButton as Button
+import com.tolmol.app.core.ui.PixelOutlinedButton as OutlinedButton
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*

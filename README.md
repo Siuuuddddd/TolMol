@@ -41,6 +41,8 @@ If an earlier import reports **Invalid Gradle JDK configuration**, select **Use 
 
 From `android/`, run `./gradlew assembleDebug testDebugUnitTest` or `.\gradlew.bat assembleDebug testDebugUnitTest` on Windows. The unit suite includes Koin module verification.
 
+The UI uses the locally bundled, SIL OFL licensed **Pixelify Sans** for every Material text style and all custom text. One typography definition in `core/ui/Typography.kt` controls headings, forms, lists, numbers, dialogs, chips, snackbars and navigation labels. All screens inherit the dark factory palette, lime actions and shared cut-corner button shapes. Welcome artwork is textless so lettering remains native and responds to Android font scaling. No font download is needed.
+
 ### GOOGLE SIGN-IN
 
 Google sign-in uses Android Credential Manager and the backend's `POST /auth/google` endpoint. The device sends `{ "idToken": "..." }`; the backend verifies Google's signature, issuer, expiry, audience and verified email, then returns the same `{ "accessToken": "..." }` response as password login. The app stores that TolMol JWT in DataStore and continues through role selection to home. No Firebase setup is needed.

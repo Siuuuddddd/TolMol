@@ -10,8 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import com.tolmol.app.MainActivity
 import com.tolmol.app.R
@@ -19,10 +17,6 @@ import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
-val authPixelFont = FontFamily(Font(R.font.pixelify_sans))
-val authBlue = Color(0xFF0644EE)
-val authInk = Color(0xFF121731)
-val authCream = Color(0xFFFFF8E7)
 
 @Composable
 fun rememberGoogleSignIn(viewModel: AuthViewModel): () -> Unit {

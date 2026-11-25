@@ -1,5 +1,7 @@
 package com.tolmol.app.feature.chat.presentation
 
+import com.tolmol.app.core.ui.PixelButton as Button
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
