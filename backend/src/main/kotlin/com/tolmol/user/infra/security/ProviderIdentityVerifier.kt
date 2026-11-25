@@ -7,7 +7,7 @@ import com.tolmol.user.service.SocialIdentity
 import com.tolmol.user.service.SocialIdentityVerifier
 import org.springframework.core.env.Environment
 
-import org.springframework.security.oauth2.jwt.*
+
 import org.springframework.stereotype.Component
 import java.net.URI
 import java.net.URLEncoder
@@ -20,13 +20,8 @@ import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
 @Component
-class ProviderIdentityVerifier(private val env: Environment, private val json: ObjectMapper) : SocialIdentityVerifier {
+class ProviderIdentityVerifier(private val env: Environment, private val json: ObjectMapper, private val googleVerifier: com.tolmol.user.service.GoogleIdentityVerifier) : SocialIdentityVerifier {
     private val client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(8)).build()
-    private val google by lazy {
-        NimbusJwtDecoder.withJwkSetUri("https://www.googleapis.com/oauth2/v3/certs").build().apply {
-            setJwtValidator(JwtValidators.createDefaultWithIssuer("https://accounts.google.com"))
-        }
-    }
 
     override fun verify(provider: String, token: String): SocialIdentity = when(provider) {
         "GOOGLE" -> google(token)
@@ -37,15 +32,8 @@ class ProviderIdentityVerifier(private val env: Environment, private val json: O
     private fun setting(name: String): String = env.getProperty(name)?.takeIf { it.isNotBlank() }
         ?: throw BusinessException(503,"Social sign-in needs provider configuration.")
 
-    private fun google(token: String): SocialIdentity {
-        val audience = setting("TOLMOL_GOOGLE_CLIENT_ID")
-        val claims = try { google.decode(token) }
-            catch (_: JwtException) { throw BusinessException(401,"Google sign-in could not be verified.") }
-        if (audience !in claims.audience || claims.getClaimAsBoolean("email_verified") != true) {
-            throw BusinessException(401,"Google sign-in could not be verified.")
-        }
-        return SocialIdentity("GOOGLE",claims.subject.orEmpty(),claims.getClaimAsString("email").orEmpty().trim().lowercase(),
-            claims.getClaimAsString("name").orEmpty().take(100).ifBlank { "TolMol user" })
+    private fun google(token: String): SocialIdentity = googleVerifier.verify(token).let {
+        SocialIdentity("GOOGLE",it.subject,it.email,it.name)
     }
 
     private fun facebook(token: String): SocialIdentity {

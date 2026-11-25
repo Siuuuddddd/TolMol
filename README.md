@@ -41,35 +41,31 @@ If an earlier import reports **Invalid Gradle JDK configuration**, select **Use 
 
 From `android/`, run `./gradlew assembleDebug testDebugUnitTest` or `.\gradlew.bat assembleDebug testDebugUnitTest` on Windows. The unit suite includes Koin module verification.
 
-### Social sign-in setup
+### GOOGLE SIGN-IN
 
-The welcome Sign in button uses the device's Google account flow; the Google and Facebook buttons also authenticate through their providers. Android Credential Manager may select a previously authorized Google account automatically, otherwise it asks the user to choose or consent. Email/password sign-in remains available from the account form's Sign in link. New Android accounts support both buying and selling; the welcome cards are informational.
+Google sign-in uses Android Credential Manager and the backend's `POST /auth/google` endpoint. The device sends `{ "idToken": "..." }`; the backend verifies Google's signature, issuer, expiry, audience and verified email, then returns the same `{ "accessToken": "..." }` response as password login. The app stores that TolMol JWT in DataStore and continues through role selection to home. No Firebase setup is needed.
 
-Email registration works without provider configuration. To enable real social sign-in, configure TolMol's own provider applications:
-
-1. Google: create an Android OAuth client for `com.tolmol.app` and this signing certificate's SHA-1, plus a Web OAuth client in the same project. Set the Web client ID in both places below. `android/gradlew.bat -p android signingReport` prints the debug certificate fingerprint when run from the repository root.
-2. Facebook: configure Facebook Login for Android with package `com.tolmol.app`, activity `com.tolmol.app.MainActivity`, and the signing certificate's Facebook key hash. Development-mode users must belong to the provider application's allowed test roles. Supply an email when granting access.
-3. Add the public Android settings to **your user** `~/.gradle/gradle.properties`, then sync and rebuild. Do not put an app secret in Android:
+1. In [Google Cloud Console](https://console.cloud.google.com/apis/credentials), configure the OAuth consent screen and create **both** a Web OAuth client and an Android OAuth client in the same project. Use package `com.tolmol.app` for Android and register the debug signing certificate's SHA-1. If the consent screen is in testing mode, add your test Google account.
+2. From `android/`, run `./gradlew signingReport` (Windows: `.\gradlew.bat signingReport`) and copy the debug **SHA-1** to the Android OAuth client. Keep the same debug keystore when rebuilding; register the new fingerprint if you change it.
+3. Put the **Web** client ID, not the Android client ID, in the ignored `android/local.properties`. Keep its existing `sdk.dir` entry:
 
    ```properties
-   tolmolGoogleClientId=YOUR_WEB_CLIENT_ID.apps.googleusercontent.com
-   tolmolFacebookAppId=YOUR_FACEBOOK_APP_ID
-   tolmolFacebookClientToken=YOUR_FACEBOOK_CLIENT_TOKEN
+   GOOGLE_WEB_CLIENT_ID=YOUR_WEB_CLIENT_ID.apps.googleusercontent.com
    ```
 
-4. Add server settings to the ignored `backend/.env` and restart the backend:
+4. Put that **same Web client ID** in the ignored `backend/.env`:
 
    ```properties
-   TOLMOL_GOOGLE_CLIENT_ID=YOUR_WEB_CLIENT_ID.apps.googleusercontent.com
-   TOLMOL_FACEBOOK_APP_ID=YOUR_FACEBOOK_APP_ID
-   TOLMOL_FACEBOOK_APP_SECRET=YOUR_FACEBOOK_APP_SECRET
-   # Optional Graph API version override:
-   TOLMOL_FACEBOOK_GRAPH_VERSION=v24.0
+   GOOGLE_CLIENT_ID=YOUR_WEB_CLIENT_ID.apps.googleusercontent.com
    ```
 
-No Firebase project or FCM key is needed. Without these settings the app reports a configuration error and the server refuses social authentication. The server verifies Google signature/issuer/audience/expiry/email verification, and Facebook token validity/app/expiry/user/email before issuing its own JWT. Existing password accounts are never silently linked by email; use their existing sign-in method. Provider credentials are not supplied in this repository, so real Google/Facebook acceptance testing is pending.
+5. Restart the backend, sync Android Studio and rebuild the app. Use a Pixel 9 Pro emulator image marked **Google Play**, with a Google account signed into the emulator. Sign in and the Google button on both account forms use this flow. An authorized account may be selected automatically; otherwise Google displays account selection/consent. Cancellation shows no error. Facebook is hidden.
 
-Provider guides: [Google Credential Manager](https://developer.android.com/identity/sign-in/credential-manager-siwg-implementation), [Facebook Login for Android](https://developers.facebook.com/docs/facebook-login/android/).
+A missing client ID leaves Google visible and displays "Google sign-in is not configured yet"; email/password and the rest of the app still work. No OAuth ID, token or secret is committed. Real Google acceptance requires the owner's provider setup and client ID; all code and automated tests can run without it.
+
+Verified Google email links an existing email account once, preserving its password, profile and roles. New Google accounts have no password hash, verified email and the Android registration defaults (BUYER and SELLER). A subject already linked to another account cannot replace the existing link. Future sign-ins use the stable Google subject. The new endpoint allows 30 attempts per peer IP per minute using Redis; arbitrary forwarded headers cannot bypass the limit. Existing password registration/login remain unchanged.
+
+Implementation references: [Android Credential Manager](https://developer.android.com/identity/sign-in/credential-manager-siwg-implementation), [Google server verification](https://developers.google.com/identity/gsi/web/guides/verify-google-id-token).
 
 ## REST API
 
@@ -78,7 +74,7 @@ Send JSON bodies and use `Authorization: Bearer <accessToken>` on authenticated 
 | Endpoint | Purpose |
 |---|---|
 | `POST /api/auth/register`, `POST /api/auth/login` | Register with email, password and roles such as `["SELLER","BUYER"]`. Login with email and password for a token. |
-| `POST /api/auth/social` | Exchange a verified provider token for a TolMol JWT. Registration also accepts an optional `name`. |
+| `POST /auth/google` | Verify a Google `idToken`, link or create the account, and return a TolMol JWT. Registration also accepts an optional `name`. |
 | `GET /api/me` | Current account ID and available roles. |
 | `PUT /api/me/location/{BUYER or SELLER}` | Set latitude and longitude for that role. Refresh within 15 minutes before publishing, browsing or bidding. |
 | `POST /api/listings` | Publish with category, weight, startingRate and deadline. Uses the seller’s stored location. |

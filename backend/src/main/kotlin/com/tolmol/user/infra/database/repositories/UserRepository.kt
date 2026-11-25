@@ -10,13 +10,15 @@ import org.springframework.dao.DuplicateKeyException
 import org.springframework.stereotype.Repository
 import java.util.UUID
 import com.tolmol.user.service.SocialIdentity
+import com.tolmol.user.service.GoogleIdentity
+import com.tolmol.platform.domain.exception.BusinessException
 
 @Repository
 class UserRepository(private val db: Databases, private val cache: com.tolmol.user.infra.redis.LocationCache) : UserStore {
     override fun register(account: Account, name: String?) {
         try {
             db.users.transactions.execute {
-                db.users.sql.sql("insert into accounts values(?,?,?,?)").params(account.id,account.email,account.passwordHash,account.roles.joinToString(",")).update()
+                db.users.sql.sql("insert into accounts(id,email,password_hash,roles) values(?,?,?,?)").params(account.id,account.email,account.passwordHash,account.roles.joinToString(",")).update()
                 if (name != null) db.users.sql.sql("insert into account_profiles(user_id,name) values(?,?)").params(account.id,name).update()
             }
         } catch (e: DuplicateKeyException) { throw EmailTakenException() }
@@ -31,7 +33,7 @@ class UserRepository(private val db: Databases, private val cache: com.tolmol.us
                 if (existing != null) return@execute existing
                 if (find(identity.email) != null) throw EmailTakenException()
                 val id = UUID.randomUUID()
-                db.users.sql.sql("insert into accounts values(?,?,?,?)")
+                db.users.sql.sql("insert into accounts(id,email,password_hash,roles) values(?,?,?,?)")
                     .params(id,identity.email,passwordHash,"BUYER,SELLER").update()
                 db.users.sql.sql("insert into account_profiles(user_id,name) values(?,?)").params(id,identity.name).update()
                 db.users.sql.sql("insert into social_identities(provider,subject,user_id) values(?,?,?)")
@@ -40,6 +42,32 @@ class UserRepository(private val db: Databases, private val cache: com.tolmol.us
             }!!
         } catch (error: DuplicateKeyException) { throw EmailTakenException() }
     }
+    override fun googleAccount(identity: GoogleIdentity): UUID = db.users.transactions.execute {
+        db.users.sql.sql("select pg_advisory_xact_lock(hashtextextended(?,0))")
+            .param("GOOGLE:" + identity.subject).query { _,_ -> true }.single()
+        val known = db.users.sql.sql("select id from accounts where google_subject=?")
+            .param(identity.subject).query(UUID::class.java).optional().orElse(null)
+        if (known != null) return@execute known
+        db.users.sql.sql("select pg_advisory_xact_lock(hashtextextended(?,0))")
+            .param("EMAIL:" + identity.email).query { _,_ -> true }.single()
+        val candidate = UUID.randomUUID()
+        db.users.sql.sql("""insert into accounts(id,email,password_hash,roles,google_subject,email_verified)
+            values(?,?,null,'BUYER,SELLER',?,true) on conflict(email) do nothing""")
+            .params(candidate,identity.email,identity.subject).update()
+        val account = db.users.sql.sql("select id,google_subject from accounts where email=? for update")
+            .param(identity.email).query { row,_ -> row.getObject("id",UUID::class.java) to row.getString("google_subject") }.single()
+        if (account.second != null && account.second != identity.subject) {
+            throw BusinessException(409,"This email is already linked to another Google account. Use the original sign-in method.")
+        }
+        db.users.sql.sql("update accounts set google_subject=?,email_verified=true where id=?")
+            .params(identity.subject,account.first).update()
+        db.users.sql.sql("insert into account_profiles(user_id,name) values(?,?) on conflict(user_id) do nothing")
+            .params(account.first,identity.name).update()
+        db.users.sql.sql("insert into social_identities(provider,subject,user_id) values('GOOGLE',?,?) on conflict(provider,subject) do nothing")
+            .params(identity.subject,account.first).update()
+        account.first
+    }!!
+
     override fun find(email: String) = db.users.sql.sql("select * from accounts where email=?").param(email)
         .query(UserEntity::class.java).optional().orElse(null)?.toDomain()
     override fun hasRole(id: UUID, role: Role) = db.users.sql.sql("select count(*) from accounts where id=? and ?=any(string_to_array(roles,','))")

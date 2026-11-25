@@ -50,3 +50,10 @@
 - Real Google/Facebook acceptance is blocked on owner-supplied provider registration and credentials. Email/password registration and the rest of the MVP remain usable; missing provider configuration returns an actionable error.
 
 - Welcome restoration (2026-11-25): reuse regions of the original approved TolMol artwork for the full-width factory header, narrower non-clickable metal cards, lime button frame and hazard-striped floor. Remove the one-account note. Authentication actions retain their existing Google/Facebook and registration behavior. Original card lettering is preserved at normal text size, with native readable cards and button text at enlarged Android font settings. No backend or authentication contract changes.
+
+## Google sign-in contract update — 2026-11-25
+
+- The latest request supersedes the earlier email-collision policy for Google. `/auth/google` links a verified Google email to an existing account once, preserves that account's password/profile/roles, and otherwise creates a passwordless account with both Android registration roles. Stable Google subject is the identity key on subsequent sign-ins; a different subject cannot replace a linked subject.
+- V5 adds a unique nullable Google subject and verified-email flag and allows null password hashes, while retaining existing password authentication and the legacy social-identity records. Inserts name their columns to survive schema additions.
+- GOOGLE_CLIENT_ID comes only from backend environment/local .env. The verifier contract lives in service so infrastructure depends inward; its Google JWT implementation lives in infra/security and accepts an injected decoder in focused tests. RSA-signed test tokens validate rejection of wrong audiences, signatures, expiry, issuer and unverified email without contacting Google.
+- No existing IP rate limiter was present in the owning backend source. The new Google endpoint therefore receives its own Redis-backed 30-attempts-per-peer-IP-per-minute filter. It ignores client-supplied forwarding headers and fails closed if Redis is unavailable; other business endpoints and authentication rules are unchanged.
