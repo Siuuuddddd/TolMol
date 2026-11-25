@@ -25,4 +25,8 @@ internal val importedScrapPhotos=mapOf(
     "scrap_metal_05" to R.drawable.scrap_metal_05,
     "scrap_metal_06" to R.drawable.scrap_metal_06,
     "scrap_metal_07" to R.drawable.scrap_metal_07,
+    "scrap_metal_08" to R.drawable.scrap_metal_08,
+    "scrap_metal_09" to R.drawable.scrap_metal_09,
+    "scrap_metal_10" to R.drawable.scrap_metal_10,
+    "scrap_metal_11" to R.drawable.scrap_metal_11,
 )

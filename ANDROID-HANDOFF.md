@@ -53,3 +53,7 @@ Validation: assembleDebug and all 8 Android unit tests pass, including Koin modu
 ### Additional metal product photos — 2026-11-26
 
 Imported six supplied photos (two iron rods, two copper wire, two aluminium sheets), bringing the bundled catalog to 23 photos. Stable keys scrap_metal_02/03 map to iron rods, 04/05 to copper wire, and 06/07 to aluminium sheet offcuts. Each pair is used across the two corresponding demo lots. Demo startup refreshes their image keys on existing OPEN lots without resetting bids, chats or deals. Original files and watermarks are retained; optimized images keep the existing 800px/120KB limits.
+
+### Utensil and brass fitting photos — 2026-11-26
+
+Added four supplied originals and optimized bundled JPEGs, bringing the catalog to 27 photos. scrap_metal_08/09 are assigned to the kitchen utensil lots; scrap_metal_10/11 are assigned to the brass fitting lots. Each supplied photo is used by one corresponding repeated demo lot. Existing OPEN demo lots receive the image keys on startup without a data reset. The importer preserves originals and existing keys, and keeps optimized files within 800px and 120KB.

@@ -32,9 +32,10 @@ class DemoSeederTest : BackendTest() {
         val demoOpen=db.marketplace.sql.sql("select id from listings where seller in (:users) and status='OPEN'").param("users",demoUsers).query(UUID::class.java).set()
         assertEquals(50,demoOpen.size)
         val materialPhotos=market.feedDetails(buyer).map { it.lot }.filter {
-            it.title in setOf("Iron rods and offcuts","Copper wire scrap","Aluminium sheet offcuts")
+            it.title in setOf("Iron rods and offcuts","Copper wire scrap","Aluminium sheet offcuts",
+                "Old steel kitchen utensils","Mixed brass fittings")
         }.map { it.imageKey }.toSet()
-        assertEquals((2..7).map { "scrap_metal_%02d".format(it) }.toSet(),materialPhotos)
+        assertEquals((2..11).map { "scrap_metal_%02d".format(it) }.toSet(),materialPhotos)
         assertTrue(market.feedDetails(buyer).map { it.lot.id }.containsAll(demoOpen))
         environment.propertySources.addFirst(org.springframework.core.env.MapPropertySource("moved-demo-center",mapOf(
             "tolmol.seed.center-lat" to 18.5204,"tolmol.seed.center-lng" to 73.8567)))

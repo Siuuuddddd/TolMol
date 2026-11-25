@@ -136,5 +136,29 @@
     "hash": "BB19CE6FB03DEBE6861DA8552EDA8EBCD7A97E147754844A3678D4A3A9CE11DD",
     "category": "metal",
     "imageKey": "scrap_metal_07"
+  },
+  {
+    "source": "metal_08_kitchen_utensils_01.png",
+    "hash": "298DE7D8BBF0990E4668A8EC9DE8E12C058C9E6F96F096C6BC27A5C00E70C530",
+    "category": "metal",
+    "imageKey": "scrap_metal_08"
+  },
+  {
+    "source": "metal_09_kitchen_utensils_02.png",
+    "hash": "0224E78A36510B59F812E5550F3BEAC67EEBD0D344F5B6C8FA73A5322A78A051",
+    "category": "metal",
+    "imageKey": "scrap_metal_09"
+  },
+  {
+    "source": "metal_10_brass_fittings_01.png",
+    "hash": "6CFE2EBC35854084D2786820FC28218342C573F3AC146173B9AC24F89968BE1F",
+    "category": "metal",
+    "imageKey": "scrap_metal_10"
+  },
+  {
+    "source": "metal_11_brass_fittings_02.png",
+    "hash": "1CEE4C4DEB2AB0FB486A139A848BAA04C1A490F06B7A3C691E0638CD359629DA",
+    "category": "metal",
+    "imageKey": "scrap_metal_11"
   }
 ]

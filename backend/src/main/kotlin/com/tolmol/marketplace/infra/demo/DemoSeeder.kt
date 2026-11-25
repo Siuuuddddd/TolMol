@@ -57,8 +57,8 @@ class DemoSeeder(
         Item("Iron rods and offcuts","METAL","140","32","scrap_metal_02","Construction iron rod offcuts in mixed lengths. Please bring suitable loading transport."),
         Item("Copper wire scrap","METAL","18","540","scrap_metal_04","Mixed copper wire offcuts from electrical work. Final weight and condition checked at pickup."),
         Item("Aluminium sheet offcuts","METAL","28","130","scrap_metal_06","Mixed aluminium sheet offcuts from fabrication. Edges may be sharp; collect with gloves."),
-        Item("Old steel kitchen utensils","METAL","22","45",null,"Used stainless steel kitchen utensils for scrap recovery. Sold as a mixed lot."),
-        Item("Mixed brass fittings","METAL","12","340",null,"Old brass plumbing fittings from a renovation. Rate is per kg after inspection."),
+        Item("Old steel kitchen utensils","METAL","22","45","scrap_metal_08","Used stainless steel kitchen utensils for scrap recovery. Sold as a mixed lot."),
+        Item("Mixed brass fittings","METAL","12","340","scrap_metal_10","Old brass plumbing fittings from a renovation. Rate is per kg after inspection."),
         Item("Used cardboard cartons","CARDBOARD","42","9","scrap_cardboard_01","Empty used cardboard cartons in mixed sizes. Some boxes have tape and printed labels."),
         Item("Flattened corrugated cardboard","CARDBOARD","55","10","scrap_cardboard_02","Flattened cardboard boxes stacked for recycling. Dry storage and easy loading access."),
         Item("Plastic bottles for recycling","PLASTIC","16","17",null,"Empty mixed plastic bottles from a residential collection. Sorting is required at pickup."),
@@ -112,6 +112,8 @@ class DemoSeeder(
                 "scrap_metal_02" -> "scrap_metal_03"
                 "scrap_metal_04" -> "scrap_metal_05"
                 "scrap_metal_06" -> "scrap_metal_07"
+                "scrap_metal_08" -> "scrap_metal_09"
+                "scrap_metal_10" -> "scrap_metal_11"
                 else -> item.key
             }
             val deadline=now.plusSeconds(if(index<5) 2700L+index*600 else 7200L+(index*4700L)%248400L)
