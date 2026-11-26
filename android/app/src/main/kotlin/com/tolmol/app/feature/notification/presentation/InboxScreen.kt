@@ -1,5 +1,6 @@
 package com.tolmol.app.feature.notification.presentation
 
+import com.tolmol.app.core.ui.components.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -28,10 +29,10 @@ fun InboxScreen(vm: NotificationViewModel) {
     }
     Screen("Alerts") {
         ScreenFeedback(state) { vm.refresh() }
-        if (state.value?.isEmpty() == true) Text("No alerts yet.")
+        if (state.value?.isEmpty() == true) EmptyState("All caught up", "No alerts yet.")
         if (state.value.orEmpty().any { !it.read }) TextButton({ vm.readAll() }, enabled = !state.loading) { Text("Mark all read") }
         for (alert in state.value.orEmpty()) {
-            if (alert.read) Text(alert.type.replace('.', '_').label())
+            if (alert.read) BrickCard { Text(alert.type.replace('.', '_').label()) }
             else RowCard(alert.type.replace('.', '_').label(), "Unread · Tap to mark read") { vm.read(alert.eventId) }
         }
         if (state.value.orEmpty().size >= 100) TextButton({ vm.more() }, enabled = !state.loading) { Text("Load more") }

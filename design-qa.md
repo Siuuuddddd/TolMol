@@ -31,3 +31,13 @@ Implementation captures are in the chat visualization directory: tolmol-detail-r
 ## Remaining findings
 
 No open P0, P1 or P2 findings for the requested phone layout. Intentional differences from the retail reference are the TolMol theme/font, actual auction actions and existing app destinations. Tablet layouts remain outside the established MVP scope.
+
+## Cream brick rollout — 2026-11-27
+
+This supersedes the earlier dark/lime visual comparison above. The two new images were not present in the latest attachment; exact reference-image comparison is unavailable. Checked the rendered app against the detailed written brief and fallback palette instead. Pixelify Sans display + Nunito Sans body are bundled approximations, and the decorative art is an original Canvas reconstruction rather than cropped reference art.
+
+Inspected native Pixel 9 Pro API 36 layout on the isolated TolMol_UI_QA emulator: cream welcome, sky registration/sign-in, cream Discovery and photo cards, steel five-tab bar, item gallery/actions, bid sheet, account, bids, completed pickup deal, alerts, empty seller listings, publish form and dropdown, conversations and read-only messages. Fixed blue gaps above white fields, inline Message button pressure on seller text, short button wrapping, price font and native status-bar contrast. Keyboard/form actions and original callbacks remain native. Shared error state and disabled styles were visible; transient skeletons and dialogs/snackbar also have source previews. No auction/deal/message writes were made. Real Google account completion was not exercised because the isolated emulator has no registered Google account.
+
+Evidence: brick-home.png, brick-signin-final.png, brick-system-bars-final.png, brick-detail-actions.png, brick-bid-sheet.png, brick-account.png, brick-bids.png, brick-deal.png, brick-alerts.png, brick-listings.png, brick-publish-final.png, brick-category-menu.png, brick-conversations.png and brick-chat.png in the chat visualization directory. Some capture names reflect the intended route; consult the image itself when comparing.
+
+Final build and 8 unit tests pass. All drawables are below 150KB. Exact comparison to the missing images and real-account Google authentication remain manual checks; no business-rule or backend change was made by this visual rollout.

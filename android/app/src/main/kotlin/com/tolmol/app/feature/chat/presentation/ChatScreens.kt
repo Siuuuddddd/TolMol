@@ -1,5 +1,10 @@
 package com.tolmol.app.feature.chat.presentation
 
+import com.tolmol.app.core.ui.components.EmptyState
+import com.tolmol.app.core.ui.components.*
+import com.tolmol.app.core.ui.theme.*
+import com.tolmol.app.core.ui.components.TolMolTextField as OutlinedTextField
+
 import com.tolmol.app.core.ui.PixelButton as Button
 
 import androidx.compose.foundation.layout.*
@@ -67,7 +72,7 @@ fun ConversationsScreen(vm: ConversationsViewModel, user: String, listing: Strin
     val conversations = state.value?.filter { listing == null || it.listing == listing }
     Screen("Conversations") {
         ScreenFeedback(state) { vm.refresh() }
-        if (conversations?.isEmpty() == true) Text("No conversations on this page.")
+        if (conversations?.isEmpty() == true) EmptyState("No conversations yet", "No conversations on this page.")
         for (thread in conversations.orEmpty()) {
             val other = if (user == thread.seller) "Buyer ${thread.buyer.take(8)}" else "Seller ${thread.seller.take(8)}"
             RowCard(other, "Lot ${thread.listing.take(8)}") { open(thread) }
@@ -96,10 +101,12 @@ fun ChatThreadScreen(vm: ChatViewModel, id: String, user: String) {
     Screen("Conversation") {
         ScreenFeedback(state) { vm.refresh(id) }
         val thread = state.value
-        if (thread?.messages?.isEmpty() == true) Text("No messages yet.")
+        if (thread?.messages?.isEmpty() == true) EmptyState("Start a conversation", "No messages yet.")
         for (message in thread?.messages.orEmpty()) {
+            BrickCard(Modifier.fillMaxWidth()) {
             Text(if (message.sender == user) "You" else "Other participant", style = MaterialTheme.typography.labelMedium)
             Text(message.body)
+            }
         }
         if (thread?.conversation?.writable == true) {
             OutlinedTextField(draft, { draft = it }, Modifier.fillMaxWidth(), label = { Text("Message") })

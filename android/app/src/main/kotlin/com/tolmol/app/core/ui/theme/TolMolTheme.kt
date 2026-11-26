@@ -21,10 +21,10 @@ private val palette=lightColorScheme(
 @Composable
 fun TolMolTheme(content:@Composable ()->Unit) {
     val view=LocalView.current
-    SideEffect { if(!view.isInEditMode) (view.context as? Activity)?.window?.let {
+    DisposableEffect(view) { if(!view.isInEditMode) (view.context as? Activity)?.window?.let {
         WindowCompat.getInsetsController(it,view).isAppearanceLightStatusBars=true
         WindowCompat.getInsetsController(it,view).isAppearanceLightNavigationBars=true
-    } }
+    }; onDispose {} }
     CompositionLocalProvider(LocalTextSelectionColors provides TextSelectionColors(GameColors.Blue,GameColors.BlueLight)) {
         MaterialTheme(colorScheme=palette,typography=GameTypography,shapes=GameShapes) {
             Surface(color=GameColors.Cream,contentColor=GameColors.Navy,content=content)

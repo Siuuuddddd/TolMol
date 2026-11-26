@@ -7,6 +7,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.tolmol.app.core.ui.components.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
@@ -37,24 +38,27 @@ abstract class ScreenViewModel<T> : ViewModel() {
 fun Screen(title: String, content: @Composable ColumnScope.() -> Unit) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(title, style = MaterialTheme.typography.headlineSmall)
+        OutlinedPixelText(title, style = MaterialTheme.typography.headlineSmall)
         content()
+        BrickWallFooter(Modifier.fillMaxWidth())
     }
 }
 
 @Composable
 fun ScreenFeedback(state: ScreenState<*>, retry: () -> Unit) {
-    if (state.loading) LinearProgressIndicator(Modifier.fillMaxWidth())
+    if (state.loading) SkeletonBrick(Modifier.fillMaxWidth())
     if (state.error != null) {
-        Text(state.error, color = MaterialTheme.colorScheme.error)
-        TextButton(retry) { Text("Retry") }
+        BrickCard(Modifier.fillMaxWidth()) {
+            Text(state.error, color = MaterialTheme.colorScheme.error)
+            BrickSecondaryButton(retry) { Text("Retry") }
+        }
     }
 }
 
 @Composable
 fun RowCard(title: String, subtitle: String, onClick: () -> Unit) {
-    Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+    BrickCard(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
+        Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
             Text(title, style = MaterialTheme.typography.titleMedium)
             Text(subtitle, style = MaterialTheme.typography.bodyMedium)
         }

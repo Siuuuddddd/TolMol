@@ -1,5 +1,10 @@
 package com.tolmol.app.feature.discovery.presentation
 
+import com.tolmol.app.core.ui.components.*
+import com.tolmol.app.core.ui.theme.*
+import com.tolmol.app.core.ui.components.TolMolTextField as OutlinedTextField
+import com.tolmol.app.core.ui.components.BrickChip as FilterChip
+
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -54,8 +59,8 @@ fun DiscoveryScreen(vm: DiscoveryViewModel, location: Instant?, startSearch: Boo
                 placeholder={Text("Search scrap nearby")},singleLine=true,shape=RoundedCornerShape(24.dp),
                 leadingIcon={
                     Canvas(Modifier.size(20.dp)) {
-                        drawCircle(Color(0xFFD1D2DB),radius=size.width*0.3f,center=Offset(size.width*0.4f,size.height*0.4f),style=Stroke(2.dp.toPx()))
-                        drawLine(Color(0xFFD1D2DB),Offset(size.width*0.63f,size.height*0.63f),Offset(size.width*0.95f,size.height*0.95f),2.dp.toPx())
+                        drawCircle(GameColors.Muted,radius=size.width*0.3f,center=Offset(size.width*0.4f,size.height*0.4f),style=Stroke(2.dp.toPx()))
+                        drawLine(GameColors.Muted,Offset(size.width*0.63f,size.height*0.63f),Offset(size.width*0.95f,size.height*0.95f),2.dp.toPx())
                     }
                 },
                 trailingIcon={if(state.query.isNotEmpty()) IconButton({vm.event(DiscoveryEvent.Query(""))},
@@ -98,13 +103,13 @@ fun DiscoveryScreen(vm: DiscoveryViewModel, location: Instant?, startSearch: Boo
                     } else items(sections,key={it.id}) { section ->
                         Column(verticalArrangement=Arrangement.spacedBy(10.dp)) {
                             Row(Modifier.fillMaxWidth().padding(horizontal=16.dp),verticalAlignment=Alignment.CenterVertically) {
-                                Text(section.title,Modifier.weight(1f),style=MaterialTheme.typography.headlineSmall)
-                                TextButton({vm.event(DiscoveryEvent.Section(section.id))}) {Text("See all")}
+                                OutlinedPixelText(section.title,Modifier.weight(1f),style=MaterialTheme.typography.headlineSmall)
+                                YellowUnderlineLink("See all",{vm.event(DiscoveryEvent.Section(section.id))})
                             }
                             LazyRow(contentPadding=PaddingValues(horizontal=16.dp),horizontalArrangement=Arrangement.spacedBy(16.dp)) {
                                 items(section.lots.take(12),key={it.id}) { lot ->
                                     LotCard(lot,now,lot.id in state.watched,lot.id in state.pending,
-                                        {vm.event(DiscoveryEvent.Watch(lot.id))},{open(lot)},Modifier.width(172.dp))
+                                        {vm.event(DiscoveryEvent.Watch(lot.id))},{open(lot)},Modifier.width(196.dp))
                                 }
                             }
                         }
@@ -117,17 +122,13 @@ fun DiscoveryScreen(vm: DiscoveryViewModel, location: Instant?, startSearch: Boo
 
 @Composable
 internal fun LotCard(lot: NearbyLot,now: Instant,watched: Boolean,pending: Boolean,watch: ()->Unit,open: ()->Unit,modifier: Modifier) {
-    Column(modifier.clickable(onClick=open),verticalArrangement=Arrangement.spacedBy(6.dp)) {
-        Box(Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(16.dp))
+    BrickCard(modifier,onClick=open,contentPadding=PaddingValues(start=8.dp,end=12.dp,top=18.dp,bottom=12.dp)) {
+        Box(Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(16.dp)).border(GameDimens.Border,GameColors.Navy,RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant)) {
             ScrapImage(lot.imageKey,ScrapCategory.of(lot.category).name,Modifier.matchParentSize())
-            if(endingSoon(lot,now)) Surface(Modifier.align(Alignment.BottomStart).padding(8.dp),
-                color=MaterialTheme.colorScheme.primaryContainer,shape=MaterialTheme.shapes.extraSmall) {
-                Text("Ending soon",Modifier.padding(horizontal=6.dp,vertical=3.dp),style=MaterialTheme.typography.labelSmall,
-                    color=MaterialTheme.colorScheme.onPrimaryContainer)
-            }
+            if(endingSoon(lot,now)) BrickTag("Ending soon",Modifier.align(Alignment.BottomStart).padding(8.dp))
             IconButton(watch,Modifier.align(Alignment.TopEnd).padding(6.dp).size(44.dp)
-                .background(Color(0xE6121319),CircleShape).semantics {
+                .background(GameColors.Paper,CircleShape).border(GameDimens.Border,GameColors.Navy,CircleShape).semantics {
                     contentDescription=if(watched) "Unwatch ${lot.title}" else "Watch ${lot.title}"
                     stateDescription=if(watched) "Watched" else "Not watched"
                 },enabled=!pending) {Heart(watched)}
@@ -141,7 +142,7 @@ internal fun LotCard(lot: NearbyLot,now: Instant,watched: Boolean,pending: Boole
 }
 @Composable
 private fun Heart(filled: Boolean) {
-    val color=if(filled) MaterialTheme.colorScheme.primary else Color.White
+    val color=if(filled) MaterialTheme.colorScheme.primary else GameColors.Navy
     CompositionLocalProvider(LocalContentColor provides color) {
         NativeIcon(if(filled) R.drawable.ic_ui_heart_filled else R.drawable.ic_ui_heart,null)
     }
@@ -152,21 +153,15 @@ private fun timeLeft(deadline: String,now: Instant): String {
 }
 @Composable
 private fun FeedError(message: String,retry: ()->Unit) {
-    Column(Modifier.fillMaxWidth().padding(16.dp)) {
+    BrickCard(Modifier.fillMaxWidth().padding(16.dp)) {
         Text(message,color=MaterialTheme.colorScheme.error)
-        TextButton(retry) {Text("Retry")}
+        BrickSecondaryButton(retry) {Text("Retry")}
     }
 }
 @Composable
 private fun FeedEmpty(refresh: ()->Unit,filtered: Boolean) {
-    Column(Modifier.fillMaxWidth().padding(24.dp),verticalArrangement=Arrangement.spacedBy(16.dp),
-        horizontalAlignment=Alignment.CenterHorizontally) {
-        ScrapImage(null,"METAL",Modifier.size(96.dp).clip(MaterialTheme.shapes.medium))
-        Text("No scrap nearby yet",style=MaterialTheme.typography.titleLarge)
-        Text(if(filtered) "Try another search or category." else "New lots within 20 km will appear here.",
-            style=MaterialTheme.typography.bodyMedium)
-        PixelButton(refresh) {Text("Refresh")}
-    }
+    EmptyState("No scrap nearby yet",
+        if(filtered) "Try another search or category." else "New lots within 20 km will appear here.",refresh)
 }
 @Composable
 private fun SkeletonSection() {
@@ -174,8 +169,8 @@ private fun SkeletonSection() {
         Box(Modifier.padding(horizontal=16.dp).size(160.dp,24.dp).background(MaterialTheme.colorScheme.surfaceVariant))
         LazyRow(contentPadding=PaddingValues(16.dp),horizontalArrangement=Arrangement.spacedBy(16.dp)) {
             items(3) {
-                Column(Modifier.width(172.dp),verticalArrangement=Arrangement.spacedBy(10.dp)) {
-                    Box(Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surfaceVariant))
+                Column(Modifier.width(196.dp),verticalArrangement=Arrangement.spacedBy(10.dp)) {
+                    SkeletonBrick(Modifier.fillMaxWidth().aspectRatio(1f))
                     Box(Modifier.size(140.dp,18.dp).background(MaterialTheme.colorScheme.surfaceVariant))
                     Box(Modifier.size(100.dp,18.dp).background(MaterialTheme.colorScheme.surfaceVariant))
                 }

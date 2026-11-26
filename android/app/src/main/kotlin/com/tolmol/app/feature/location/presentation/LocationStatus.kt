@@ -1,5 +1,6 @@
 package com.tolmol.app.feature.location.presentation
 
+import com.tolmol.app.core.ui.components.*
 import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -40,9 +41,9 @@ fun LocationStatus(role: Role, viewModel: LocationViewModel, onRefresh: (Instant
     }
     LaunchedEffect(role, state.value) { state.value?.let { callback(it) } }
     if (state.error != null) {
-        Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+        BrickCard(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
             Text(state.error.orEmpty(), color = MaterialTheme.colorScheme.error)
-            TextButton({
+            BrickSecondaryButton({
                 if (state.error.orEmpty().startsWith("Allow location")) {
                     permission.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
                 } else viewModel.refresh(role)

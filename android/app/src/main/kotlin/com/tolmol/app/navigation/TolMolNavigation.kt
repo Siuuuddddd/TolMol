@@ -1,5 +1,9 @@
 package com.tolmol.app.navigation
 
+import com.tolmol.app.core.ui.components.SteelBar
+import com.tolmol.app.core.ui.components.SteelSystemBars
+import com.tolmol.app.core.ui.theme.GameColors
+import androidx.compose.foundation.background
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -80,7 +84,8 @@ fun TolMolNavigation(auth: AuthViewModel = koinViewModel()) {
         AuthForm(state, register, auth) { auth.clearError(); register = !register }
         return
     }
-    Box(Modifier.fillMaxSize().safeDrawingPadding().imePadding()) {
+    Box(Modifier.fillMaxSize().background(GameColors.Navy).safeDrawingPadding().imePadding()) {
+        SteelSystemBars()
         when {
             account == null && state.loading && !showForm -> CircularProgressIndicator(Modifier.padding(24.dp))
             account == null -> AuthForm(state, register, auth) { auth.clearError(); register = !register }
@@ -108,6 +113,7 @@ private fun MarketplaceNavigation(account: Account, role: Role, changeRole: (() 
     }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
             if(stack.lastOrNull() !is AuctionRoute) {
+            SteelBar {
             Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                 if (stack.size > 1) TextButton(back) { Text("Back") }
                 else if (changeRole != null) TextButton(changeRole) {
@@ -115,6 +121,7 @@ private fun MarketplaceNavigation(account: Account, role: Role, changeRole: (() 
                 }
                 else Text(if (role == Role.BUYER) "Buyer mode" else "Seller mode", Modifier.padding(12.dp))
                 TextButton(logout) { Text("Sign out") }
+            }
             }
             }
             LocationStatus(role, koinViewModel()) { location = it }

@@ -1,5 +1,11 @@
 package com.tolmol.app.feature.deal.presentation
 
+import com.tolmol.app.core.ui.components.EmptyState
+import com.tolmol.app.core.ui.components.*
+import com.tolmol.app.core.ui.theme.*
+import com.tolmol.app.core.ui.components.TolMolTextField as OutlinedTextField
+import com.tolmol.app.core.ui.components.PixelDialog as AlertDialog
+
 import com.tolmol.app.core.ui.PixelButton as Button
 import com.tolmol.app.core.ui.PixelOutlinedButton as OutlinedButton
 
@@ -40,7 +46,7 @@ fun DealsScreen(vm: DealsViewModel, user: String, seller: Boolean, open: (String
     val items = state.value?.filter { (if (seller) it.seller else it.buyer) == user }
     Screen("Deals") {
         ScreenFeedback(state) { vm.refresh() }
-        if (items?.isEmpty() == true) Text("Awarded lots appear here.")
+        if (items?.isEmpty() == true) EmptyState("No deals yet", "Awarded lots appear here.")
         for (item in items.orEmpty()) {
             RowCard(item.state.name.label(), "Lot ${item.listing.take(8)} · ₹${item.rate.toPlainString()}/kg") { open(item.listing) }
         }
@@ -61,13 +67,16 @@ fun DealScreen(vm: DealViewModel, id: String, user: String) {
     Screen("Pickup and settlement") {
         ScreenFeedback(state) { vm.refresh(id) }
         if (deal != null) {
-            Text(deal.state.name.label(), style = MaterialTheme.typography.titleLarge)
+            BrickCard(Modifier.fillMaxWidth()) {
+            Text(deal.state.name.label(), style = MaterialTheme.typography.titleLarge,
+                color=when(deal.state) {DealState.COMPLETED->GameColors.Green;DealState.WEIGHT_DISPUTE->GameColors.RedShadow;else->GameColors.Navy})
             Text("Pickup coordinates: ${deal.pickupLatitude}, ${deal.pickupLongitude}")
             Text("Agreed rate: ₹${deal.rate.toPlainString()}/kg")
             Text("Estimated weight: ${deal.estimatedWeight.toPlainString()} kg")
             deal.actualWeight?.let { Text("Measured weight: ${it.toPlainString()} kg") }
             deal.amount?.let { Text("Settlement total: ₹${it.toPlainString()}") }
             deal.relisted?.let { Text("Replacement listing: $it") }
+            }
             val inspecting = deal.state == DealState.PENDING_PICKUP && deal.actualWeight == null && deal.buyer == user
             val disputing = deal.state == DealState.WEIGHT_DISPUTE
             val entered = input.toBigDecimalOrNull()
@@ -94,7 +103,7 @@ fun DealScreen(vm: DealViewModel, id: String, user: String) {
         onDismissRequest = { confirmCancel = false },
         title = { Text("Cancel this deal?") },
         text = { Text("The lot will be relisted with the measured weight and a new deadline.") },
-        confirmButton = { TextButton({ confirmCancel = false; vm.cancel(id) }) { Text("Cancel and relist") } },
+        confirmButton = { Button({ confirmCancel = false; vm.cancel(id) }) { Text("Cancel and relist") } },
         dismissButton = { TextButton({ confirmCancel = false }) { Text("Keep negotiating") } },
     )
 }

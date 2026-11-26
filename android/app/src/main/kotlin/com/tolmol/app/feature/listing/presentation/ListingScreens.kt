@@ -1,5 +1,11 @@
 package com.tolmol.app.feature.listing.presentation
 
+import com.tolmol.app.core.ui.components.EmptyState
+import com.tolmol.app.core.ui.components.*
+import com.tolmol.app.core.ui.theme.*
+import com.tolmol.app.core.ui.components.TolMolTextField as OutlinedTextField
+import com.tolmol.app.core.ui.components.PixelDialog as AlertDialog
+
 import com.tolmol.app.core.ui.PixelButton as Button
 import com.tolmol.app.core.ui.PixelOutlinedButton as OutlinedButton
 
@@ -49,7 +55,7 @@ fun MyListingsScreen(vm: ListingViewModel, publish: () -> Unit, open: (Listing) 
     Screen("My listings") {
         Button(publish) { Text("Publish a listing") }
         ScreenFeedback(state) { vm.refresh() }
-        if (state.value?.isEmpty() == true) Text("Your published scrap lots appear here.")
+        if (state.value?.isEmpty() == true) EmptyState("No listings yet", "Your published scrap lots appear here.")
         for (listing in state.value.orEmpty()) {
             RowCard(listing.title ?: listing.category, "${listing.weight.toPlainString()} kg · ${listing.status.label()}") { open(listing) }
         }
@@ -112,17 +118,19 @@ fun OffersScreen(vm: OffersViewModel, id: String, category: String, status: Stri
         if (chat != null) OutlinedButton(chat) { Text("Conversations") }
         if (deal != null && !open && status != "EXPIRED") OutlinedButton(deal) { Text("Pickup deal") }
         ScreenFeedback(state) { vm.refresh(id) }
-        if (state.value?.isEmpty() == true) Text("No bids on this listing yet.")
+        if (state.value?.isEmpty() == true) EmptyState("Waiting for offers", "No bids on this listing yet.")
         for (offer in state.value.orEmpty()) {
+            BrickCard(Modifier.fillMaxWidth()) {
             Text("₹${offer.rate.toPlainString()}/kg", style = MaterialTheme.typography.titleMedium)
             Text("Buyer ${offer.buyer.take(8)} · ${offer.createdAt}")
-            if (open) TextButton({ confirm = offer }, enabled = !state.loading) { Text("Accept this bid") }
+            if (open) Button({ confirm = offer }, enabled = !state.loading) { Text("Accept this bid") }
+            }
         }
     }
     confirm?.let { offer ->
         AlertDialog(onDismissRequest = { confirm = null }, title = { Text("Accept this bid?") },
             text = { Text("Award the lot at ₹${offer.rate.toPlainString()}/kg and close bidding.") },
-            confirmButton = { TextButton({ confirm = null; vm.accept(id, offer.id) }) { Text("Accept bid") } },
+            confirmButton = { Button({ confirm = null; vm.accept(id, offer.id) }) { Text("Accept bid") } },
             dismissButton = { TextButton({ confirm = null }) { Text("Back") } })
     }
 }

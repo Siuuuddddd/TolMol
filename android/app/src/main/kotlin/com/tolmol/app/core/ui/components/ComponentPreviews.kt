@@ -39,3 +39,16 @@ import com.tolmol.app.R
 }}}
 @Preview(name="Pixel dialog",widthDp=390)
 @Composable fun PixelDialogPreview() {TolMolTheme {PixelDialog({},confirmButton={TextButton({}) {Text("Confirm")}},title={Text("Accept this bid?")},text={Text("Review the agreed rate before confirming.")})}}
+
+@Preview(name="Pixel snackbar",widthDp=390)
+@Composable fun PixelSnackbarPreview() {TolMolTheme {PixelSnackbar(object:SnackbarData {
+    override val visuals=SnackbarVisualsPreview
+    override fun dismiss() {}
+    override fun performAction() {}
+})}}
+private object SnackbarVisualsPreview:SnackbarVisuals {
+    override val message="Your listing is published"
+    override val actionLabel="View"
+    override val withDismissAction=true
+    override val duration=SnackbarDuration.Short
+}

@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tolmol.app.core.ui.components.BrickBottomBar
 import com.tolmol.app.R
 import com.tolmol.app.core.ui.*
 
@@ -18,17 +19,8 @@ fun MarketplaceBottomBar(current: MarketplaceTab, select: (MarketplaceTab) -> Un
     val items=listOf(MarketplaceTab.DISCOVER to R.drawable.ic_ui_home,
         MarketplaceTab.ACCOUNT to R.drawable.ic_ui_account, MarketplaceTab.SEARCH to R.drawable.ic_ui_search,
         MarketplaceTab.ALERTS to R.drawable.ic_ui_bell, MarketplaceTab.LISTINGS to R.drawable.ic_ui_tag)
-    NavigationBar(Modifier.height(64.dp),containerColor=MaterialTheme.colorScheme.surface,
-        windowInsets=WindowInsets(0,0,0,0)) {
-        items.forEach { (tab,icon) ->
-            NavigationBarItem(selected=selected==tab,onClick={select(tab)},
-                icon={NativeIcon(icon,null)},label={Text(tab.title,fontSize=12.sp,maxLines=1)},
-                colors=NavigationBarItemDefaults.colors(selectedIconColor=MaterialTheme.colorScheme.primary,
-                    selectedTextColor=MaterialTheme.colorScheme.primary,
-                    indicatorColor=MaterialTheme.colorScheme.primary.copy(alpha=0.12f),
-                    unselectedIconColor=MaterialTheme.colorScheme.onSurface,
-                    unselectedTextColor=MaterialTheme.colorScheme.onSurface))
-        }
+    BrickBottomBar(items.indexOfFirst {it.first==selected},items.map {it.first.title},items.map {it.second}) { index ->
+        select(items[index].first)
     }
 }
 

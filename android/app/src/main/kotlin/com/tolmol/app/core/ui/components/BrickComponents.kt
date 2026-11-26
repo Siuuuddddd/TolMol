@@ -48,7 +48,7 @@ fun BrickButton(onClick:()->Unit,modifier:Modifier=Modifier,enabled:Boolean=true
     shape:Shape=GameShapes.small,contentPadding:PaddingValues=PaddingValues(horizontal=20.dp,vertical=12.dp),
     tone:BrickTone=BrickTone.Red,content:@Composable RowScope.()->Unit) {
     val source=remember {MutableInteractionSource()}; val pressed by source.collectIsPressedAsState()
-    Box(modifier.heightIn(min=GameDimens.Button).drawBehind {brick(tone.fill(),pressed=pressed,enabled=enabled)}) {
+    Box(modifier.width(IntrinsicSize.Max).heightIn(min=GameDimens.Button).drawBehind {brick(tone.fill(),pressed=pressed,enabled=enabled)}) {
         androidx.compose.material3.Button(onClick,Modifier.fillMaxWidth().heightIn(min=GameDimens.Button).padding(top=GameDimens.Stud/2,bottom=GameDimens.Shadow,end=GameDimens.Shadow),
             enabled=enabled,shape=shape,interactionSource=source,contentPadding=contentPadding,
             colors=ButtonDefaults.buttonColors(containerColor=GameColors.Transparent,contentColor=tone.ink(),
@@ -62,12 +62,13 @@ fun BrickSecondaryButton(onClick:()->Unit,modifier:Modifier=Modifier,enabled:Boo
 
 @Composable
 fun BrickCard(modifier:Modifier=Modifier,onClick:(()->Unit)?=null,tone:BrickTone?=null,
+    contentPadding:PaddingValues=PaddingValues(start=16.dp,end=20.dp,top=22.dp,bottom=18.dp),
     content:@Composable ColumnScope.()->Unit) {
     val color=tone?.fill() ?: GameColors.Paper
     val ink=tone?.ink() ?: GameColors.Navy
     Column(modifier.then(if(onClick!=null) Modifier.clickable(onClick=onClick) else Modifier)
         .drawBehind {brick(color,tone?.fill() ?: GameColors.Blue)}
-        .padding(start=16.dp,end=20.dp,top=22.dp,bottom=18.dp),verticalArrangement=Arrangement.spacedBy(GameDimens.SmallGap)) {
+        .padding(contentPadding),verticalArrangement=Arrangement.spacedBy(GameDimens.SmallGap)) {
         CompositionLocalProvider(LocalContentColor provides ink) {content()}
     }
 }
@@ -87,15 +88,16 @@ fun TolMolTextField(value:String,onValueChange:(String)->Unit,modifier:Modifier=
     singleLine:Boolean=false,minLines:Int=1,maxLines:Int=if(singleLine) 1 else Int.MAX_VALUE,
     keyboardOptions:KeyboardOptions=KeyboardOptions.Default,visualTransformation:VisualTransformation=VisualTransformation.None,
     shape:Shape=GameShapes.small,isError:Boolean=false,supportingText:(@Composable ()->Unit)?=null) {
-    OutlinedTextField(value,onValueChange,modifier.heightIn(min=GameDimens.Field)
+    TextField(value,onValueChange,modifier.heightIn(min=GameDimens.Field)
         .border(GameDimens.Border,if(isError) MaterialTheme.colorScheme.error else GameColors.Navy,shape),
         enabled=enabled,label=label,placeholder=placeholder,leadingIcon=leadingIcon,trailingIcon=trailingIcon,
         singleLine=singleLine,minLines=minLines,maxLines=maxLines,keyboardOptions=keyboardOptions,
         visualTransformation=visualTransformation,shape=shape,isError=isError,supportingText=supportingText,
         textStyle=MaterialTheme.typography.bodyLarge,
-        colors=OutlinedTextFieldDefaults.colors(focusedContainerColor=GameColors.Paper,unfocusedContainerColor=GameColors.Paper,
+        colors=TextFieldDefaults.colors(focusedContainerColor=GameColors.Paper,unfocusedContainerColor=GameColors.Paper,
             disabledContainerColor=GameColors.Cream,errorContainerColor=GameColors.Paper,
-            focusedBorderColor=GameColors.Transparent,unfocusedBorderColor=GameColors.Transparent,
+            focusedIndicatorColor=GameColors.Transparent,unfocusedIndicatorColor=GameColors.Transparent,
+            disabledIndicatorColor=GameColors.Transparent,errorIndicatorColor=GameColors.Transparent,
             focusedLabelColor=GameColors.Navy,unfocusedLabelColor=GameColors.Navy,cursorColor=GameColors.Blue))
 }
 @Composable
@@ -140,5 +142,12 @@ fun YellowUnderlineLink(text:String,onClick:()->Unit,modifier:Modifier=Modifier,
     TextButton(onClick,modifier,enabled=enabled,colors=ButtonDefaults.textButtonColors(contentColor=if(onSky) GameColors.Paper else GameColors.Navy)) {
         Text(text,Modifier.drawBehind {drawRect(GameColors.Yellow,Offset(0f,size.height-3.dp.toPx()),Size(size.width,3.dp.toPx()))},
             style=MaterialTheme.typography.labelLarge)
+    }
+}
+
+@Composable
+fun BrickTag(text:String,modifier:Modifier=Modifier) {
+    Box(modifier.drawBehind {brick(GameColors.Red)}.padding(start=8.dp,end=12.dp,top=10.dp,bottom=7.dp)) {
+        Text(text,style=MaterialTheme.typography.labelSmall,color=GameColors.Paper)
     }
 }

@@ -161,3 +161,13 @@ fun BrickBottomBar(selected:Int,labels:List<String>,icons:List<Int>,select:(Int)
                 unselectedIconColor=GameColors.Paper,unselectedTextColor=GameColors.Paper,indicatorColor=GameColors.Blue))}
     }}
 }
+
+@Composable
+fun SteelSystemBars() {
+    val view=LocalView.current
+    DisposableEffect(view) {
+        val window=(view.context as? Activity)?.window
+        window?.let {WindowCompat.getInsetsController(it,view).apply {isAppearanceLightStatusBars=false;isAppearanceLightNavigationBars=false}}
+        onDispose {window?.let {WindowCompat.getInsetsController(it,view).apply {isAppearanceLightStatusBars=true;isAppearanceLightNavigationBars=true}}}
+    }
+}

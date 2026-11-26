@@ -1,5 +1,6 @@
 package com.tolmol.app.feature.bidding.presentation
 
+import com.tolmol.app.core.ui.components.*
 import com.tolmol.app.core.ui.PixelButton as Button
 import com.tolmol.app.core.ui.PixelOutlinedButton as OutlinedButton
 
@@ -94,10 +95,10 @@ fun MyBidsScreen(vm: MyBidsViewModel, openDeal: (String) -> Unit) {
     }
     Screen("My bids") {
         ScreenFeedback(state) { vm.refresh() }
-        if (state.value?.isEmpty() == true) Text("You have not placed any bids.")
+        if (state.value?.isEmpty() == true) EmptyState("No bids yet", "You have not placed any bids.")
         for (bid in state.value.orEmpty()) {
             if (bid.status == "WON") RowCard("₹${bid.rate.toPlainString()}/kg · Won", bid.createdAt) { openDeal(bid.listing) }
-            else {
+            else BrickCard {
                 Text("₹${bid.rate.toPlainString()}/kg · ${bid.status.label()}", style = MaterialTheme.typography.titleMedium)
                 Text(bid.createdAt)
             }

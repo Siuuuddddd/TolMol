@@ -1,6 +1,8 @@
 package com.tolmol.app.core.ui
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.border
+import com.tolmol.app.core.ui.theme.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
@@ -38,7 +40,7 @@ fun ScrapPhotoGallery(imageKey: String?, category: String, modifier: Modifier = 
         Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Box {
             HorizontalPager(pager, Modifier.fillMaxWidth().aspectRatio(if(fullBleed) 1.12f else 1.3f)
-                .then(if(fullBleed) Modifier else Modifier.clip(MaterialTheme.shapes.large))) { page ->
+                .clip(GameShapes.large).border(GameDimens.Border,GameColors.Navy,GameShapes.large)) { page ->
                 ScrapImage(photos[page], category, Modifier.fillMaxSize())
             }
             if(fullBleed) {
