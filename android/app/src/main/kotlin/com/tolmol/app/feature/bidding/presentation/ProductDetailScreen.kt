@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -106,14 +107,15 @@ fun BiddingScreen(vm: BiddingViewModel, id: String, category: String, weight: St
                     TextButton({details.refresh(id)}) {Text("Retry details")}
                 }
                 OutlinedPixelText(title,style=MaterialTheme.typography.headlineSmall)
-                Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(10.dp)) {
+                Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(10.dp)) {
                     Surface(shape=CircleShape,color=MaterialTheme.colorScheme.primaryContainer,modifier=Modifier.size(48.dp)) {
                         Box(contentAlignment=Alignment.Center) {Text(lot?.sellerDisplayName?.take(1) ?: "T",style=MaterialTheme.typography.headlineSmall)}
                     }
                     Column(Modifier.weight(1f)) {
-                        Text(lot?.sellerDisplayName ?: "Loading seller…",style=MaterialTheme.typography.bodyMedium,fontWeight=FontWeight.Bold)
+                        Text(lot?.sellerDisplayName ?: "Loading seller…",style=MaterialTheme.typography.bodyMedium,fontWeight=FontWeight.Bold,
+                            maxLines=2,overflow=TextOverflow.Ellipsis)
                         Text(member?.let {"Member since $it"} ?: "TolMol member",style=MaterialTheme.typography.labelSmall,
-                            color=MaterialTheme.colorScheme.onSurfaceVariant)
+                            color=MaterialTheme.colorScheme.onSurfaceVariant,maxLines=2,overflow=TextOverflow.Ellipsis)
                     }
                     if(openChat!=null) OutlinedButton(openChat,shape=RoundedCornerShape(24.dp),contentPadding=PaddingValues(horizontal=14.dp)) {Text("Message",style=MaterialTheme.typography.labelMedium)}
                 }
@@ -162,7 +164,8 @@ fun BiddingScreen(vm: BiddingViewModel, id: String, category: String, weight: St
             val same=related.lots.filter {it.id!=id && ScrapCategory.of(it.category)==ScrapCategory.of(category)}
             val other=if(same.isNotEmpty()) same else related.lots.filter {it.id!=id}
             if(related.loading || related.error!=null || other.isNotEmpty()) {
-                Row(Modifier.fillMaxWidth().padding(16.dp),verticalAlignment=Alignment.CenterVertically) {
+                Row(Modifier.fillMaxWidth().padding(16.dp),verticalAlignment=Alignment.CenterVertically,
+                    horizontalArrangement=Arrangement.spacedBy(GameDimens.Gap)) {
                     OutlinedPixelText("More scrap nearby",Modifier.weight(1f))
                     OutlinedButton(onSearch,shape=RoundedCornerShape(24.dp),contentPadding=PaddingValues(horizontal=12.dp)) {
                         Text("See all",style=MaterialTheme.typography.labelMedium);Spacer(Modifier.width(6.dp));NativeIcon(R.drawable.ic_ui_chevron,null,Modifier.size(18.dp))

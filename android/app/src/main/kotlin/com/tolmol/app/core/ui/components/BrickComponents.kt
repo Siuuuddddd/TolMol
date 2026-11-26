@@ -48,8 +48,8 @@ fun BrickButton(onClick:()->Unit,modifier:Modifier=Modifier,enabled:Boolean=true
     shape:Shape=GameShapes.small,contentPadding:PaddingValues=PaddingValues(horizontal=20.dp,vertical=12.dp),
     tone:BrickTone=BrickTone.Red,content:@Composable RowScope.()->Unit) {
     val source=remember {MutableInteractionSource()}; val pressed by source.collectIsPressedAsState()
-    Box(modifier.width(IntrinsicSize.Max).heightIn(min=GameDimens.Button).drawBehind {brick(tone.fill(),pressed=pressed,enabled=enabled)}) {
-        androidx.compose.material3.Button(onClick,Modifier.fillMaxWidth().heightIn(min=GameDimens.Button).padding(top=GameDimens.Stud/2,bottom=GameDimens.Shadow,end=GameDimens.Shadow),
+    Box(modifier.heightIn(min=GameDimens.Button).drawBehind {brick(tone.fill(),pressed=pressed,enabled=enabled)},propagateMinConstraints=true) {
+        androidx.compose.material3.Button(onClick,Modifier.heightIn(min=GameDimens.Button).padding(top=GameDimens.Stud/2,bottom=GameDimens.Shadow,end=GameDimens.Shadow),
             enabled=enabled,shape=shape,interactionSource=source,contentPadding=contentPadding,
             colors=ButtonDefaults.buttonColors(containerColor=GameColors.Transparent,contentColor=tone.ink(),
                 disabledContainerColor=GameColors.Transparent,disabledContentColor=GameColors.Muted),content=content)
