@@ -23,18 +23,3 @@ fun MarketplaceBottomBar(current: MarketplaceTab, select: (MarketplaceTab) -> Un
         select(items[index].first)
     }
 }
-
-@Composable
-fun MarketplaceAccountScreen(buyer: Boolean, open: (MarketplaceTab)->Unit, logout: ()->Unit) {
-    Screen("My TolMol") {
-        Text("Your activity",style=MaterialTheme.typography.titleMedium)
-        if(buyer) {
-            RowCard("My bids","Follow your offers and auction results") {open(MarketplaceTab.BIDS)}
-            RowCard("Watchlist","Your saved nearby scrap lots") {open(MarketplaceTab.WATCHLIST)}
-        }
-        RowCard("Messages","Conversations with buyers and sellers") {open(MarketplaceTab.CHAT)}
-        RowCard("My deals","Pickup and settlement") {open(MarketplaceTab.DEALS)}
-        RowCard("Notifications","Updates about your activity") {open(MarketplaceTab.ALERTS)}
-        TextButton(logout) {Text("Sign out")}
-    }
-}

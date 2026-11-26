@@ -112,7 +112,7 @@ private fun MarketplaceNavigation(account: Account, role: Role, changeRole: (() 
         MarketplaceBottomBar((stack.firstOrNull() as? Home)?.tab ?: MarketplaceTab.DISCOVER,navigate)
     }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
-            if(stack.lastOrNull() !is AuctionRoute) {
+            if(stack.lastOrNull() !is AuctionRoute && (stack.lastOrNull() as? Home)?.tab != MarketplaceTab.ACCOUNT) {
             SteelBar {
             Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                 if (stack.size > 1) TextButton(back) { Text("Back") }
@@ -149,7 +149,8 @@ private fun MarketplaceNavigation(account: Account, role: Role, changeRole: (() 
                                     if(changeRole!=null) TextButton(changeRole) {Text("Switch to buying")}
                                 }
                             }
-                            MarketplaceTab.ACCOUNT -> MarketplaceAccountScreen(account.roles.contains(Role.BUYER),navigate,logout)
+                            MarketplaceTab.ACCOUNT -> MarketplaceAccountScreen(account,role,navigate,logout,
+                                publish={stack.add(PublishRoute)},changeRole=changeRole)
                             MarketplaceTab.BIDS -> MyBidsScreen(koinViewModel()) { stack.add(DealRoute(it)) }
                             MarketplaceTab.LISTINGS -> MyListingsScreen(koinViewModel(), { stack.add(PublishRoute) }) {
                                 stack.add(OffersRoute(it.id, it.category, it.status, it.deadline))
