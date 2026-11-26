@@ -28,7 +28,7 @@ import com.tolmol.app.feature.deal.presentation.*
 
 @Serializable
 enum class MarketplaceTab(val title: String) {
-    DISCOVER("Discover"), LISTINGS("Listings"), BIDS("Bids"), CHAT("Chat"), ALERTS("Alerts"), DEALS("Deals")
+    DISCOVER("Home"), ACCOUNT("My TolMol"), SEARCH("Search"), ALERTS("Inbox"), LISTINGS("Selling"), BIDS("Bids"), CHAT("Chat"), DEALS("Deals"), WATCHLIST("Watchlist")
 }
 
 @Serializable data class Home(val tab: MarketplaceTab) : NavKey
@@ -46,6 +46,7 @@ fun TolMolNavigation(auth: AuthViewModel = koinViewModel()) {
     var register by rememberSaveable { mutableStateOf(false) }
     var showForm by rememberSaveable { mutableStateOf(false) }
     val googleSignIn = rememberGoogleSignIn(auth)
+    var modeTab by rememberSaveable { mutableStateOf<MarketplaceTab?>(null) }
     val role = state.role
     val account = state.account
     LaunchedEffect(account?.id) {
@@ -86,30 +87,27 @@ fun TolMolNavigation(auth: AuthViewModel = koinViewModel()) {
             role == null -> CircularProgressIndicator(Modifier.padding(24.dp))
             else -> key(account.id, role) {
                 val otherRole = account.roles.firstOrNull { it != role }
-                MarketplaceNavigation(account, role, otherRole?.let { next -> { auth.select(next) } }, { auth.logout() })
+                MarketplaceNavigation(account, role, otherRole?.let { next -> { modeTab=null; auth.select(next) } }, { modeTab=null; auth.logout() }, modeTab) { tab, next -> modeTab=tab; auth.select(next) }
             }
         }
     }
 }
 
 @Composable
-private fun MarketplaceNavigation(account: Account, role: Role, changeRole: (() -> Unit)?, logout: () -> Unit) {
-    val sharedTabs = listOf(MarketplaceTab.CHAT, MarketplaceTab.ALERTS, MarketplaceTab.DEALS)
-    val tabs = (if (role == Role.BUYER) listOf(MarketplaceTab.DISCOVER, MarketplaceTab.BIDS)
-        else listOf(MarketplaceTab.LISTINGS)) + sharedTabs
-    val stack = rememberNavBackStack(Home(tabs.first()))
+private fun MarketplaceNavigation(account: Account, role: Role, changeRole: (() -> Unit)?, logout: () -> Unit, initialTab: MarketplaceTab?, changeMode: (MarketplaceTab, Role) -> Unit) {
+    val stack = rememberNavBackStack(Home(initialTab ?: if(role == Role.BUYER) MarketplaceTab.DISCOVER else MarketplaceTab.LISTINGS))
     val back = { if (stack.size > 1) stack.removeAt(stack.lastIndex); Unit }
     var location by remember { mutableStateOf<Instant?>(null) }
+    val navigate: (MarketplaceTab) -> Unit = { tab ->
+        if(tab==MarketplaceTab.LISTINGS && role==Role.BUYER && Role.SELLER in account.roles) changeMode(tab,Role.SELLER)
+        else if(tab in listOf(MarketplaceTab.DISCOVER,MarketplaceTab.SEARCH,MarketplaceTab.WATCHLIST) && role==Role.SELLER && Role.BUYER in account.roles) changeMode(tab,Role.BUYER)
+        else { stack.clear(); stack.add(Home(tab)) }
+    }
     Scaffold(bottomBar = {
-        if (stack.lastOrNull() is Home && tabs.size > 1) NavigationBar {
-            for (tab in tabs) {
-                NavigationBarItem(selected = (stack.lastOrNull() as? Home)?.tab == tab,
-                    onClick = { stack[0] = Home(tab) },
-                    icon = { Text(tab.title.take(1)) }, label = { Text(tab.title) })
-            }
-        }
+        MarketplaceBottomBar((stack.firstOrNull() as? Home)?.tab ?: MarketplaceTab.DISCOVER,navigate)
     }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
+            if(stack.lastOrNull() !is AuctionRoute) {
             Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                 if (stack.size > 1) TextButton(back) { Text("Back") }
                 else if (changeRole != null) TextButton(changeRole) {
@@ -117,6 +115,7 @@ private fun MarketplaceNavigation(account: Account, role: Role, changeRole: (() 
                 }
                 else Text(if (role == Role.BUYER) "Buyer mode" else "Seller mode", Modifier.padding(12.dp))
                 TextButton(logout) { Text("Sign out") }
+            }
             }
             LocationStatus(role, koinViewModel()) { location = it }
             NavDisplay(
@@ -127,9 +126,23 @@ private fun MarketplaceNavigation(account: Account, role: Role, changeRole: (() 
                 entryProvider = entryProvider {
                     entry<Home> { route ->
                         when (route.tab) {
-                            MarketplaceTab.DISCOVER -> DiscoveryScreen(koinViewModel(), location) { lot ->
+                            MarketplaceTab.DISCOVER -> if(role==Role.BUYER) DiscoveryScreen(koinViewModel(), location) { lot ->
                                 stack.add(AuctionRoute(lot.id, lot.category, lot.weight.toPlainString(), lot.startingRate.toPlainString(), lot.deadline))
+                            } else MyListingsScreen(koinViewModel(), {stack.add(PublishRoute)}) {
+                                stack.add(OffersRoute(it.id,it.category,it.status,it.deadline))
                             }
+                            MarketplaceTab.SEARCH, MarketplaceTab.WATCHLIST -> {
+                                if(role==Role.BUYER) DiscoveryScreen(koinViewModel(),location,
+                                    startSearch=route.tab==MarketplaceTab.SEARCH,
+                                    watchedOnly=route.tab==MarketplaceTab.WATCHLIST) { lot ->
+                                    stack.add(AuctionRoute(lot.id,lot.category,lot.weight.toPlainString(),lot.startingRate.toPlainString(),lot.deadline))
+                                }
+                                else Screen("Search nearby scrap") {
+                                    Text("Switch to buying to search nearby lots.")
+                                    if(changeRole!=null) TextButton(changeRole) {Text("Switch to buying")}
+                                }
+                            }
+                            MarketplaceTab.ACCOUNT -> MarketplaceAccountScreen(account.roles.contains(Role.BUYER),navigate,logout)
                             MarketplaceTab.BIDS -> MyBidsScreen(koinViewModel()) { stack.add(DealRoute(it)) }
                             MarketplaceTab.LISTINGS -> MyListingsScreen(koinViewModel(), { stack.add(PublishRoute) }) {
                                 stack.add(OffersRoute(it.id, it.category, it.status, it.deadline))
@@ -142,7 +155,10 @@ private fun MarketplaceNavigation(account: Account, role: Role, changeRole: (() 
                     entry<AuctionRoute> { lot ->
                         BiddingScreen(koinViewModel(), lot.id, lot.category, lot.weight, lot.opening, lot.deadline,
                             { stack.add(OpenChatRoute(lot.id)) },
-                            { stack.add(DealRoute(lot.id)) }, details = koinViewModel())
+                            { stack.add(DealRoute(lot.id)) }, details = koinViewModel(), recommendations = koinViewModel(),
+                            onBack = back, onSearch = {navigate(MarketplaceTab.SEARCH)},
+                            onWatchlist = {navigate(MarketplaceTab.WATCHLIST)},
+                            onRelatedLot = { next -> stack.add(AuctionRoute(next.id,next.category,next.weight.toPlainString(),next.startingRate.toPlainString(),next.deadline)) })
                     }
                     entry<PublishRoute> { PublishScreen(koinViewModel(), back) }
                     entry<OffersRoute> { lot ->

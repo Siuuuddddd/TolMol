@@ -11,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.*
@@ -22,6 +23,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.tolmol.app.R
+import com.tolmol.app.core.ui.NativeIcon
 import com.tolmol.app.core.ui.ScrapImage
 import com.tolmol.app.core.ui.PixelButton
 import com.tolmol.app.feature.discovery.domain.*
@@ -32,7 +35,11 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DiscoveryScreen(vm: DiscoveryViewModel, location: Instant?, onLot: (NearbyLot) -> Unit) {
+fun DiscoveryScreen(vm: DiscoveryViewModel, location: Instant?, startSearch: Boolean=false, watchedOnly: Boolean=false, onLot: (NearbyLot) -> Unit) {
+    val focus = remember { androidx.compose.ui.focus.FocusRequester() }
+    val keyboard = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
+    LaunchedEffect(vm,watchedOnly) { if(watchedOnly != vm.state.value.watchedOnly) vm.event(DiscoveryEvent.WatchedOnly) }
+    LaunchedEffect(startSearch) { if(startSearch) { delay(200); focus.requestFocus(); keyboard?.show() } }
     val state by vm.state.collectAsStateWithLifecycle()
     var now by remember { mutableStateOf(Instant.now()) }
     LaunchedEffect(vm, location) { vm.refresh() }
@@ -43,7 +50,7 @@ fun DiscoveryScreen(vm: DiscoveryViewModel, location: Instant?, onLot: (NearbyLo
     val open: (NearbyLot)->Unit = { vm.event(DiscoveryEvent.Viewed(it.id)); onLot(it) }
     Column(Modifier.fillMaxSize()) {
         Row(Modifier.fillMaxWidth().padding(horizontal=16.dp,vertical=8.dp),verticalAlignment=Alignment.CenterVertically) {
-            OutlinedTextField(state.query,{vm.event(DiscoveryEvent.Query(it))},Modifier.weight(1f),
+            OutlinedTextField(state.query,{vm.event(DiscoveryEvent.Query(it))},Modifier.weight(1f).focusRequester(focus),
                 placeholder={Text("Search scrap nearby")},singleLine=true,shape=RoundedCornerShape(24.dp),
                 leadingIcon={
                     Canvas(Modifier.size(20.dp)) {
@@ -109,7 +116,7 @@ fun DiscoveryScreen(vm: DiscoveryViewModel, location: Instant?, onLot: (NearbyLo
 }
 
 @Composable
-private fun LotCard(lot: NearbyLot,now: Instant,watched: Boolean,pending: Boolean,watch: ()->Unit,open: ()->Unit,modifier: Modifier) {
+internal fun LotCard(lot: NearbyLot,now: Instant,watched: Boolean,pending: Boolean,watch: ()->Unit,open: ()->Unit,modifier: Modifier) {
     Column(modifier.clickable(onClick=open),verticalArrangement=Arrangement.spacedBy(6.dp)) {
         Box(Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant)) {
@@ -135,14 +142,8 @@ private fun LotCard(lot: NearbyLot,now: Instant,watched: Boolean,pending: Boolea
 @Composable
 private fun Heart(filled: Boolean) {
     val color=if(filled) MaterialTheme.colorScheme.primary else Color.White
-    Canvas(Modifier.size(24.dp)) {
-        val path=Path().apply {
-            moveTo(size.width/2,size.height*0.9f)
-            cubicTo(-size.width*0.15f,size.height*0.4f,0f,-size.height*0.05f,size.width/2,size.height*0.25f)
-            cubicTo(size.width,size.height*-0.05f,size.width*1.15f,size.height*0.4f,size.width/2,size.height*0.9f)
-            close()
-        }
-        if(filled) drawPath(path,color) else drawPath(path,color,style=Stroke(2.dp.toPx()))
+    CompositionLocalProvider(LocalContentColor provides color) {
+        NativeIcon(if(filled) R.drawable.ic_ui_heart_filled else R.drawable.ic_ui_heart,null)
     }
 }
 private fun timeLeft(deadline: String,now: Instant): String {

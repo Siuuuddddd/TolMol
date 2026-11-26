@@ -72,3 +72,13 @@ Validation: Android assembleDebug and all 8 unit tests pass; full backend build 
 Investigated the generic Google verification error: port 8080 belonged to a Docker app container using the November 21 image and no GOOGLE_CLIENT_ID environment value. The saved backend and Android OAuth client IDs matched; the running container had never reloaded that configuration. Rebuilt bootJar and recreated only the app service with --build --force-recreate, then verified the runtime audience configuration matched Android and health returned UP. Retrying Google sign-in on the emulator successfully opened Discovery.
 
 README Google troubleshooting now distinguishes host bootRun from container startup and includes the exact rebuild/recreation commands. Docker Desktop/container restart alone retains old image/environment settings; no OAuth secrets or IDs were added to tracked files.
+
+### Product detail and native navigation redesign — 2026-11-26
+
+Adapted the supplied item-page layout to TolMol: pinned Item toolbar, edge-to-edge local photo pager with count/watch overlays, title then seller/avatar/message row, prominent real per-kg price, estimated lot value, collection/weight rows, full-width bid/watch/message actions, a live auction card, item specifics, description/details dialogs and horizontal real nearby-lot cards. The current dark/lime palette and Pixelify Sans remain unchanged. Bid entry uses a native modal sheet and retains the existing ViewModel/use-case/idempotency flow; no backend rules changed.
+
+Use five native tabs (Home, My TolMol, Search, Inbox, Selling), including on detail screens. My TolMol exposes bids, watches, messages and deals; Inbox opens existing alerts. Selling/Search change authorized roles and preserve the intended destination. The bar uses Google's original outlined VectorDrawables, 24dp icons, a 64dp content height and system-owned gesture insets. Source and Apache license are in android/UI-ICONS.md and android/GOOGLE-MATERIAL-ICONS-LICENSE.txt.
+
+Reference commerce controls map to genuine TolMol actions. No basket, instant purchase, shipping promise, sponsored recommendations, synthetic popularity/watch counts or payment flow was invented. Nearby cards and prices are existing backend data; seller initials are generated from the actual display name, as in the supplied initial-avatar reference.
+
+Validation: final assembleDebug and all eight Android unit tests pass. Native Pixel 9 Pro checks cover the gallery, bid sheet/live demo bid, watch/unwatch, description dialog, recommendation cards and five-tab navigation. Final screenshots are in the chat visualization folder; design-qa.md records the comparison and intentional auction-specific adaptations. No backend changes were required.

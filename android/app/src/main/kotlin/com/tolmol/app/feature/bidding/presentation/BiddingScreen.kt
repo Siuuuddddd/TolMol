@@ -75,65 +75,6 @@ fun bidError(message: String, now: Instant): String {
         else "The cooldown has ended. You can bid again."
 }
 
-@Composable
-fun BiddingScreen(vm: BiddingViewModel, id: String, category: String, weight: String, opening: String,
-                  deadline: String, openChat: (() -> Unit)?, openDeal: (() -> Unit)?,
-                  details: com.tolmol.app.feature.discovery.presentation.LotDetailViewModel) {
-    val state by vm.state.collectAsStateWithLifecycle()
-    val detailState by details.state.collectAsStateWithLifecycle()
-    val lot=detailState.lot
-    LaunchedEffect(details, id) { details.refresh(id) }
-    var rate by rememberSaveable { mutableStateOf("") }
-    var now by remember { mutableStateOf(Instant.now()) }
-    val end = remember(lot?.deadline,deadline) { Instant.parse(lot?.deadline ?: deadline) }
-    DisposableEffect(vm, id) {
-        vm.observe(id)
-        onDispose { vm.stop(id) }
-    }
-    LaunchedEffect(id) {
-        while (true) {
-            now = Instant.now()
-            delay(1000)
-        }
-    }
-    val auction = state.value
-    Screen(lot?.title ?: category) {
-        if(detailState.loading) LinearProgressIndicator(Modifier.fillMaxWidth())
-        ScrapPhotoGallery(lot?.imageKey,lot?.category ?: category,Modifier.fillMaxWidth())
-        if(detailState.error!=null) {
-            Text(detailState.error!!,color=MaterialTheme.colorScheme.error)
-            TextButton({details.refresh(id)}) {Text("Retry details")}
-        }
-        lot?.let {
-            Text(it.category.lowercase().replaceFirstChar { c -> c.titlecase() },style=MaterialTheme.typography.labelLarge)
-            Text(it.sellerDisplayName,style=MaterialTheme.typography.titleMedium)
-            val member=it.sellerMemberSince?.let { date -> runCatching {
-                java.time.format.DateTimeFormatter.ofPattern("MMM yyyy",java.util.Locale.ENGLISH)
-                    .withZone(java.time.ZoneOffset.UTC).format(Instant.parse(date))
-            }.getOrNull() }
-            Text(member?.let { date -> "Member since $date" } ?: "Member of TolMol",style=MaterialTheme.typography.bodySmall)
-            it.distanceKm?.let { distance -> Text(String.format(java.util.Locale.ENGLISH,"About %.1f km away",distance)) }
-            Text(it.description.ifBlank { "Inspect the lot and confirm its condition at pickup." })
-            OutlinedButton({details.watch(id)},enabled=!detailState.watching && (it.status=="OPEN" || detailState.watched)) {
-                Text(if(detailState.watched) "Watching · Unwatch" else "Watch lot")
-            }
-        }
-        Text((lot?.weight?.toPlainString() ?: weight) + " kg estimated")
-        Text("Opening rate ₹$opening/kg")
-        Text("Highest bid: ${auction?.highest?.let { "₹${it.toPlainString()}/kg" } ?: "No bids yet"}")
-        Text(if (now.isBefore(end)) "Time left ${remaining(end, now)}" else "Auction deadline passed")
-        auction?.let { Text(it.status.label()) }
-        ScreenFeedback(state.copy(error = state.error?.let { bidError(it, now) })) { vm.refresh(id) }
-        val amount = rate.toBigDecimalOrNull()
-        if (auction?.status == "OPEN" && now.isBefore(end)) {
-            OutlinedTextField(rate, { rate = it }, Modifier.fillMaxWidth(), label = { Text("Your bid in ₹ per kg") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true)
-            Button({ amount?.let { vm.place(id, it) } }, enabled = !state.loading && amount?.signum() == 1) { Text("Place bid") }
-            if (openChat != null) OutlinedButton(openChat) { Text("Message seller") }
-        }
-        if (openDeal != null && (auction?.status == "AWARDED" || !now.isBefore(end))) OutlinedButton(openDeal) { Text("Check pickup deal") }
-    }
-}
 
 class MyBidsViewModel(private val bids: BiddingUseCase) : ScreenViewModel<List<MyBid>>() {
     val live = bids.live
