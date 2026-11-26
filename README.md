@@ -65,6 +65,15 @@ Google sign-in uses Android Credential Manager and the backend's `POST /auth/goo
 
 A missing client ID leaves Google visible and displays "Google sign-in is not configured yet"; email/password and the rest of the app still work. No OAuth ID, token or secret is committed. Real Google acceptance requires the owner's provider setup and client ID; all code and automated tests can run without it.
 
+If Google sign-in worked before but fails after restarting Docker Desktop, check which backend owns port 8080. An existing app container keeps its old image and environment even when the source or `.env` changes. From `backend/`, refresh the container backend with:
+
+```powershell
+.\gradlew.bat bootJar
+docker compose --profile app up --build --force-recreate -d app
+```
+
+Wait for `http://localhost:8080/health` to report `UP`, then retry Google sign-in. This rebuilds the application image and reloads `.env`. For host `bootRun` development, stop the container backend first with `docker compose stop app` so both servers do not compete for port 8080. Restarting an old container alone does not reload OAuth configuration.
+
 Verified Google email links an existing email account once, preserving its password, profile and roles. New Google accounts have no password hash, verified email and the Android registration defaults (BUYER and SELLER). A subject already linked to another account cannot replace the existing link. Future sign-ins use the stable Google subject. The new endpoint allows 30 attempts per peer IP per minute using Redis; arbitrary forwarded headers cannot bypass the limit. Existing password registration/login remain unchanged.
 
 Implementation references: [Android Credential Manager](https://developer.android.com/identity/sign-in/credential-manager-siwg-implementation), [Google server verification](https://developers.google.com/identity/gsi/web/guides/verify-google-id-token).

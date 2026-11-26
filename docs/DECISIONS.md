@@ -110,3 +110,9 @@ Added four supplied originals and optimized bundled JPEGs, bringing the catalog 
 Added all 18 supplied photos: 4 plastic, 6 electronics and 8 furniture, bringing the bundled catalog to 45 photos. Bottle/crate pairs use plastic keys 01–04; refrigerator/fan/mixer pairs use electronics 06–11; chair/wardrobe/table/sofa pairs use furniture 01–08. All originals are preserved and all optimized images follow the 800px/120KB limits.
 
 Some products have only one open demo lot, so detail now includes a swipeable local two-photo gallery with a page count. The selected feed thumbnail stays first. This uses bundled related-photo keys and needs no image service or backend schema change. Fans and sofa labels were made generic to fit both supplied photos; existing OPEN demo records refresh the seeded content and image keys on startup without resetting bids or deals.
+
+### Google login after Docker restart — 2026-11-26
+
+Investigated the generic Google verification error: port 8080 belonged to a Docker app container using the November 21 image and no GOOGLE_CLIENT_ID environment value. The saved backend and Android OAuth client IDs matched; the running container had never reloaded that configuration. Rebuilt bootJar and recreated only the app service with --build --force-recreate, then verified the runtime audience configuration matched Android and health returned UP. Retrying Google sign-in on the emulator successfully opened Discovery.
+
+README Google troubleshooting now distinguishes host bootRun from container startup and includes the exact rebuild/recreation commands. Docker Desktop/container restart alone retains old image/environment settings; no OAuth secrets or IDs were added to tracked files.

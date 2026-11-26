@@ -66,3 +66,9 @@ Some products have only one open demo lot, so detail now includes a swipeable lo
 
 Validation: Android assembleDebug and all 8 unit tests pass; full backend build and 33 tests pass. Checked all new title/image-key mappings in the running database and swiped the sofa detail gallery from Photo 1 of 2 to Photo 2 of 2 on Pixel 9 Pro. All 45 optimized photos meet the import size limits, and rerunning the importer preserves the catalog.
 
+
+### Google login after Docker restart — 2026-11-26
+
+Investigated the generic Google verification error: port 8080 belonged to a Docker app container using the November 21 image and no GOOGLE_CLIENT_ID environment value. The saved backend and Android OAuth client IDs matched; the running container had never reloaded that configuration. Rebuilt bootJar and recreated only the app service with --build --force-recreate, then verified the runtime audience configuration matched Android and health returned UP. Retrying Google sign-in on the emulator successfully opened Discovery.
+
+README Google troubleshooting now distinguishes host bootRun from container startup and includes the exact rebuild/recreation commands. Docker Desktop/container restart alone retains old image/environment settings; no OAuth secrets or IDs were added to tracked files.
