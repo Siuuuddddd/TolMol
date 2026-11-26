@@ -1,18 +1,11 @@
 package com.tolmol.app.feature.auth.presentation
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
 import com.tolmol.app.MainActivity
-import com.tolmol.app.R
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
@@ -44,23 +37,15 @@ fun rememberGoogleSignIn(viewModel: AuthViewModel): () -> Unit {
 }
 
 @Composable
-fun SocialButtons(viewModel: AuthViewModel, enabled: Boolean, label: String = "or continue with") {
+fun SocialButtons(viewModel: AuthViewModel, enabled: Boolean, label: String = "or continue with", onSky: Boolean = false) {
     val launch = rememberGoogleSignIn(viewModel)
-    val active = enabled
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            HorizontalDivider(Modifier.weight(1f))
-            Text(label, style = MaterialTheme.typography.bodySmall)
-            HorizontalDivider(Modifier.weight(1f))
+    Column(verticalArrangement = Arrangement.spacedBy(com.tolmol.app.core.ui.theme.GameDimens.Gap), horizontalAlignment = Alignment.CenterHorizontally) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(com.tolmol.app.core.ui.theme.GameDimens.Gap)) {
+            val ink=if(onSky) com.tolmol.app.core.ui.theme.GameColors.Paper else com.tolmol.app.core.ui.theme.GameColors.Navy
+            HorizontalDivider(Modifier.weight(1f),color=ink.copy(alpha=0.5f))
+            Text(label,style=MaterialTheme.typography.bodySmall,color=ink)
+            HorizontalDivider(Modifier.weight(1f),color=ink.copy(alpha=0.5f))
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-            OutlinedIconButton({ launch() }, enabled = active,
-                modifier = Modifier.size(52.dp), shape = CircleShape,
-                colors = IconButtonDefaults.outlinedIconButtonColors(containerColor = Color.White),
-                border = BorderStroke(1.dp,Color.LightGray)) {
-                Image(painterResource(R.drawable.google_sign_in),"Continue with Google",Modifier.size(24.dp))
-            }
-        }
-
+        com.tolmol.app.core.ui.components.SocialSignInButton(launch,Modifier.fillMaxWidth(),enabled)
     }
 }
