@@ -124,3 +124,11 @@ Adapted the supplied item-page layout to TolMol: pinned Item toolbar, edge-to-ed
 Use five native tabs (Home, My TolMol, Search, Inbox, Selling), including on detail screens. My TolMol exposes bids, watches, messages and deals; Inbox opens existing alerts. Selling/Search change authorized roles and preserve the intended destination. The bar uses Google's original outlined VectorDrawables, 24dp icons, a 64dp content height and system-owned gesture insets. Source and Apache license are in android/UI-ICONS.md and android/GOOGLE-MATERIAL-ICONS-LICENSE.txt.
 
 Reference commerce controls map to genuine TolMol actions. No basket, instant purchase, shipping promise, sponsored recommendations, synthetic popularity/watch counts or payment flow was invented. Nearby cards and prices are existing backend data; seller initials are generated from the actual display name, as in the supplied initial-avatar reference.
+
+### Cream brick design system — 2026-11-27
+
+The new request supersedes the dark/lime theme and single-font rule. The attachment folder contains only the written specification; the two new images were not supplied, so exact color sampling is unavailable. design_reference/README.md records this limitation. Use the supplied fallback palette: sky #0B3FA8–#2E86DE, navy #0B1630, red #E8212A, blue #1F55D6, yellow #FBBF1E, cream #FBF5E8, steel #8A93A0 and dark tile #1A1F2B.
+
+The shared source of truth is core/ui/theme (Color, Shape/Dimens, Typography, TolMolTheme). Pixelify Sans 700 remains the closest bundled open-license pixel display face; Nunito Sans variable 400–900 is bundled for readable geometric body/labels/prices. Both are SIL OFL. Every Material text style and light color slot is explicit; dynamic color and system dark mode are not used.
+
+Core controls live in core/ui/components: BrickButton/secondary/card/chip, OutlinedPixelText, TolMolTextField, PixelDialog/Snackbar, SkeletonBrick, EmptyState, yellow-underlined links, SocialSignInButton, hanging SignBoard, SteelTopBar/BrickBottomBar, hazard/stone footers and lightweight Canvas art. Tokens use 20dp page gutters, 32dp auth gutters, 12dp gaps, 56dp fields, 64dp actions, 2.5dp outlines, 5dp hard shadows, 12dp studs with 24dp gaps and 8dp control corners. All main components have Android Studio previews. Legacy PixelButton names delegate to the new controls for compatibility.

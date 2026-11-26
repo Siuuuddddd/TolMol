@@ -56,6 +56,8 @@ android {
 }
 
 dependencies {
+    implementation("androidx.compose.ui:ui-tooling-preview:1.11.0-rc01")
+    debugImplementation("androidx.compose.ui:ui-tooling:1.11.0-rc01")
     implementation(libs.credentials)
     implementation(libs.credentials.play)
     implementation(libs.googleid)
