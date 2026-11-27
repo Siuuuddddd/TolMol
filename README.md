@@ -10,13 +10,6 @@ PostgreSQL owns the durable data across four databases: **Users DB** for shared 
 
 The HLD shows API-gateway/load-balancer responsibilities at the deployment boundary. The services inside its dashed boundary are modules of the same application, not separately deployed microservices.
 
-<details>
-<summary>View the high-level design</summary>
-
-![TolMol modular monolith with PostgreSQL databases, Redis caches, Kafka events, WebSocket updates and mobile push](docs/architecture/TolMol-Auction-HLD-Role-Databases.png)
-
-</details>
-
 ### Redis caching and nearby discovery
 
 Redis accelerates reads; **PostgreSQL remains the source of truth** for locations, auctions and chat. The implementation uses the following caches and index:
@@ -53,7 +46,7 @@ Run `.\gradlew.bat build` for the full build and integration tests. Tests use th
 
 ## Android
 
-For Windows IDE imports, run `.\setup-workspace.ps1` from the repository root before opening the projects. This restores the backend Gradle link and saves each IDE's local Java home. Reopen an already open project after running the script. Optional `-BackendJavaHome` and `-AndroidJavaHome` arguments support other installation paths.
+Open `backend/` as a Gradle project in your IDE and `android/` in Android Studio. Configure the Gradle JDK for each project locally; machine-specific IDE settings are ignored by Git.
 
 1. Start the backend from `backend/` as above. Check that `http://localhost:8080/health` reports `UP`.
 2. Open `android/` in Android Studio and sync with its bundled JDK. For command-line builds use JDK 21. Install Android SDK 37 from SDK Manager if prompted. Run the **app** configuration on an emulator with Google Play services. The reference device is Pixel 9 Pro.
@@ -171,13 +164,7 @@ api.example.com {
 
 ## SCRAP PHOTOS
 
-Original supplied photos are in scrap_photos/. Add more with a category prefix (metal_, paper_, cardboard_, plastic_, paint_, electronics_, furniture_, other_), then run from the repository root:
-
-```powershell
-pwsh -File tools/import_images/import.ps1
-```
-
-The rerunnable importer keeps a hash manifest and stable image keys, skips previously imported photos, scales the longest side to <=800px and writes JPEGs <=120KB to drawable-nodpi (native WebP encoding is unavailable). Originals are unchanged. Unknown categories map to OTHER. No eBay screenshots, web downloads or network image loader are included. These supplied photos have no recorded license: confirm your right to use them before a public release.
+The Android app includes optimized product photos in `android/app/src/main/res/drawable-nodpi/`. These bundled assets remain available when cloning and building the app. Original source photos, local import tooling, design references and working documentation are excluded from the repository. No network image loader is required.
 
 
 ## DEMO DATA (local only)

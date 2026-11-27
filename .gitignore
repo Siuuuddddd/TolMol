@@ -5,3 +5,13 @@ build/
 .idea/
 local.properties
 /android/gradle/gradle-daemon-jvm.properties
+
+# Local source assets, tooling and working documentation; do not publish.
+/scrap_photos/
+/tools/import_images/
+/design_reference/
+/docs/
+/ANDROID-HANDOFF.md
+/BACKEND-HANDOFF.md
+/design-qa.md
+/setup-workspace.ps1
