@@ -2,6 +2,36 @@
 
 TolMol is a Kotlin and Spring Boot modular monolith for local scrap auctions. It uses PostgreSQL for identity, locations, marketplace and chat, Redis for caches, Kafka for events, and one authenticated WebSocket for live updates.
 
+## Architecture
+
+TolMol runs as **one deployable backend** with modules for user identity and role-specific locations, discovery, buying, selling, bidding, chat and notifications. Buyers discover nearby scrap and compete through auctions; sellers publish lots and accept offers. The bidding module validates bids and awards, while chat and notifications keep participants informed.
+
+PostgreSQL owns the durable data across four databases: **Users DB** for shared identity and roles, **Location DB** for buyer/seller positions, **Marketplace DB** for listings, auctions, bids and alerts, and **Chat DB** for conversations and messages. Marketplace and chat changes use transactional outboxes to publish committed events to **Kafka**. Authorized clients receive live updates through the authenticated **WebSocket** connection; configured **FCM/APNs** adapters provide offline push delivery.
+
+The HLD shows API-gateway/load-balancer responsibilities at the deployment boundary. The services inside its dashed boundary are modules of the same application, not separately deployed microservices.
+
+<details>
+<summary>View the high-level design</summary>
+
+![TolMol modular monolith with PostgreSQL databases, Redis caches, Kafka events, WebSocket updates and mobile push](docs/architecture/TolMol-Auction-HLD-Role-Databases.png)
+
+</details>
+
+### Redis caching and nearby discovery
+
+Redis accelerates reads; **PostgreSQL remains the source of truth** for locations, auctions and chat. The implementation uses the following caches and index:
+
+| Data | Redis key / index | Lifetime and consistency |
+|---|---|---|
+| Buyer and seller locations | `tolmol:location:<userId>:<role>:<revision>` | **15-minute TTL**. Role and database revision isolate a user's buyer/seller positions and prevent a newer revision from reading an older cached position. Cache misses load from Location DB. |
+| Nearby listing candidates | `tolmol:geo:listings` | Redis **GEO** index of listing coordinates, used to narrow nearby searches. It is maintained/repaired from listing data rather than using the location cache's TTL. PostgreSQL data and the final distance/status checks determine which lots are returned. |
+| Auction and bid snapshots | `tolmol:auction:<listingId>:<version>` | **15-minute TTL**. Caches the highest bid, leader, status and version for both buyer and seller reads. Bid/status changes populate the new version after the database transaction commits; misses load the database snapshot. |
+| Recent chat history | `tolmol:chat:<threadId>:<lastMessageId>` | **10-minute TTL** for the bounded latest-message page. A committed message refreshes history under the new last-message ID. Misses and cursor-based history requests read Chat DB. |
+
+Nearby discovery combines a role-specific cached location with Redis GEO candidate lookup and database validation. Redis read/write failures in the cache adapters fall back to durable database reads; the GEO adapter can return control to the database discovery path. Redis does not decide bid acceptance or replace database transactions.
+
+Auction and chat state is persisted before its cache refresh. Versioned cache keys keep older values from overwriting the current revision, while TTLs bound the lifetime of old snapshots. Kafka distributes committed auction/chat events, and the notification module routes them to authorized users through WebSocket or configured push providers.
+
 ## Run locally
 
 Install JDK 21 and start Docker Desktop with Linux containers. From the `backend/` folder in PowerShell, run the following once to create local development credentials. The application and Compose both read the ignored `.env` file.
