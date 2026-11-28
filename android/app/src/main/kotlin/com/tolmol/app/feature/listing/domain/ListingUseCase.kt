@@ -3,7 +3,7 @@ import java.math.BigDecimal
 import kotlinx.coroutines.flow.Flow
 import com.tolmol.app.core.common.LiveUpdate
 
-data class Listing(val id: String, val category: String, val weight: BigDecimal, val startingRate: BigDecimal, val deadline: String, val status: String,val title: String? = null,val description: String? = null,val imageKey: String? = null)
+data class Listing(val id: String, val category: String, val weight: BigDecimal, val startingRate: BigDecimal, val deadline: String, val status: String,val title: String? = null,val description: String? = null,val imageKey: String? = null,val coverPhotoUrl: String? = null,val photoUrls: List<String> = emptyList())
 data class Offer(val id: String, val buyer: String, val rate: BigDecimal, val createdAt: String)
 
 sealed class ListingError(message: String) : RuntimeException(message) {

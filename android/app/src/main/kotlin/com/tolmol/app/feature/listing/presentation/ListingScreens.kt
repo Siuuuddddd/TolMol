@@ -19,6 +19,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tolmol.app.core.ui.*
 import com.tolmol.app.feature.listing.domain.*
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import java.time.Instant
 
@@ -50,9 +52,41 @@ class ListingViewModel(
     }
 }
 
-class PublishViewModel(private val listings: ListingUseCase) : ScreenViewModel<Listing>() {
+class PublishViewModel(private val listings: ListingUseCase,private val photos: UploadListingPhotosUseCase) : ScreenViewModel<Listing>() {
+    var selected by mutableStateOf<List<PreparedPhoto>>(emptyList())
+        private set
+    var preparing by mutableStateOf(false)
+        private set
+    var photoError by mutableStateOf<String?>(null)
+        private set
+    var progress by mutableStateOf<String?>(null)
+        private set
+    private var created: Listing? = null
+    private val uploaded = mutableSetOf<String>()
+    fun add(sources: List<String>) {
+        if(preparing || state.value.loading || created!=null) return
+        preparing=true
+        viewModelScope.launch {
+            try {
+                photoError=null
+                sources.take(5-selected.size).forEach { source -> selected=selected+photos.prepare(source) }
+            } catch(e: kotlinx.coroutines.CancellationException) { throw e }
+            catch(e: Exception) { photoError=e.message ?: "Unable to prepare photo. Try another image." }
+            finally { preparing=false }
+        }
+    }
+    fun remove(key: String) { if(created==null && !state.value.loading) selected=selected.filterNot { it.key==key } }
+    fun cover(key: String) { if(created==null && !state.value.loading) selected=selected.sortedBy { it.key!=key } }
+    fun cameraDenied() { photoError="Camera access lets you take a scrap photo. You can also choose from gallery." }
     fun publish(category: String, weight: BigDecimal, opening: BigDecimal, hours: Long,title: String,description: String) = load {
-        listings.publish(category.trim(), weight, opening, Instant.now().plusSeconds(hours * 3600).toString(),title.trim(),description.trim())
+        val lot=created ?: listings.publish(category.trim(),weight,opening,Instant.now().plusSeconds(hours*3600).toString(),title.trim(),description.trim()).also { created=it }
+        try {
+            selected.forEachIndexed { index,photo ->
+                progress="Uploading photo "+(index+1)+" of "+selected.size
+                if(photo.key !in uploaded) { photos.upload(lot.id,photo);uploaded.add(photo.key) }
+            }
+            lot
+        } finally { progress=null }
     }
 }
 
@@ -71,6 +105,7 @@ class OffersViewModel(private val listings: ListingUseCase) : ScreenViewModel<Li
 @Composable
 fun PublishScreen(vm: PublishViewModel, published: () -> Unit) {
     val state by vm.state.collectAsStateWithLifecycle()
+    var details by rememberSaveable { mutableStateOf(false) }
     var category by rememberSaveable { mutableStateOf("OTHER") }
     var title by rememberSaveable { mutableStateOf("") }
     var description by rememberSaveable { mutableStateOf("") }
@@ -87,6 +122,17 @@ fun PublishScreen(vm: PublishViewModel, published: () -> Unit) {
     }
     LaunchedEffect(state.value) { if (state.value != null) published() }
     Screen("Publish scrap") {
+        if(!details) {
+            PhotoPickerSection(vm)
+            BrickButton({details=true}, Modifier.fillMaxWidth(), enabled=!vm.preparing) { Text("Continue to details") }
+            return@Screen
+        }
+        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween) {
+            Text("DETAILS",style=MaterialTheme.typography.headlineSmall)
+            Text("STEP 2 OF 2",style=MaterialTheme.typography.labelSmall)
+        }
+        TextButton({details=false},enabled=!state.loading) {Text("Edit photos")}
+
         OutlinedTextField(title,{title=it.take(160)},Modifier.fillMaxWidth(),label={Text("Title")},singleLine=true)
         OutlinedTextField(description,{description=it.take(2000)},Modifier.fillMaxWidth(),label={Text("Description")},minLines=3,maxLines=6)
         Box {
@@ -102,8 +148,9 @@ fun PublishScreen(vm: PublishViewModel, published: () -> Unit) {
         OutlinedTextField(hours, { hours = it }, Modifier.fillMaxWidth(), label = { Text("Auction deadline in hours") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), singleLine = true)
         Text("Your current seller location is used for pickup.")
+        vm.progress?.let { Text(it) }
         ScreenFeedback(state, submit)
-        Button(submit, enabled = valid && !state.loading) { Text("Publish listing") }
+        Button(submit, enabled = valid && !state.loading && !vm.preparing) { Text("Publish listing") }
     }
 }
 

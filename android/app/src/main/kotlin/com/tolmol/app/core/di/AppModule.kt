@@ -92,6 +92,10 @@ val appModule = module {
     singleOf(::ListingRepositoryImpl) bind ListingRepository::class
     factoryOf(::ListingUseCase)
     viewModelOf(::ListingViewModel)
+    single<com.tolmol.app.feature.listing.domain.ListingPhotoRepository> {
+        com.tolmol.app.feature.listing.data.ListingPhotoRepositoryImpl(get(),get())
+    }
+    factory { com.tolmol.app.feature.listing.domain.UploadListingPhotosUseCase(get()) }
     viewModelOf(::PublishViewModel)
     viewModelOf(::OffersViewModel)
 

@@ -11,6 +11,9 @@ compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 
 [libraries]
+exif = { module = "androidx.exifinterface:exifinterface", version = "1.4.2" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version = "3.3.0" }
+coil-network = { module = "io.coil-kt.coil3:coil-network-okhttp", version = "3.3.0" }
 credentials = { module = "androidx.credentials:credentials", version = "1.6.0" }
 credentials-play = { module = "androidx.credentials:credentials-play-services-auth", version = "1.6.0" }
 googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version = "1.2.1" }

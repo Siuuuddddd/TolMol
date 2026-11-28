@@ -21,7 +21,7 @@ class ListingRepositoryImpl(private val api: ListingApi) : ListingRepository {
     override suspend fun offers(id: String) = request { api.offers(id).map { Offer(it.id, it.buyer, it.rate.content.toBigDecimal(), it.createdAt) } }
     override suspend fun accept(id: String, bidId: String) = request { api.accept(id, AwardDto(bidId)) }
 
-    private fun ListingDto.toDomain() = Listing(id, category, weight.content.toBigDecimal(), startingRate.content.toBigDecimal(), deadline, status,title,description,imageKey)
+    private fun ListingDto.toDomain() = Listing(id, category, weight.content.toBigDecimal(), startingRate.content.toBigDecimal(), deadline, status,title,description,imageKey,coverPhotoUrl,photoUrls)
 
     private suspend fun <T> request(action: suspend () -> T): T = try { action() }
     catch (error: CancellationException) { throw error }
