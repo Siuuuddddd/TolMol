@@ -1,4 +1,5 @@
 package com.tolmol.app.core.ui
+import okhttp3.HttpUrl.Companion.toHttpUrl
 
 import androidx.compose.foundation.Image
 import androidx.compose.runtime.Composable
@@ -19,7 +20,14 @@ private fun fallback(category: String) = when(category.uppercase()) {
     else -> R.drawable.scrap_placeholder_other
 }
 @Composable
-fun ScrapImage(key: String?,category: String,modifier: Modifier=Modifier) {
+fun ScrapImage(key: String?,category: String,modifier: Modifier=Modifier, photoUrl: String? = null) {
+    if(photoUrl != null) {
+        val url = com.tolmol.app.BuildConfig.REST_URL.toHttpUrl().resolve(photoUrl)?.toString()
+        coil3.compose.AsyncImage(model=url,contentDescription="Listing photo",modifier=modifier,
+            placeholder=painterResource(importedScrapPhotos[key] ?: fallback(category)),
+            error=painterResource(importedScrapPhotos[key] ?: fallback(category)),contentScale=ContentScale.Crop)
+        return
+    }
     Image(painterResource(importedScrapPhotos[key] ?: fallback(category)),contentDescription=null,
         modifier=modifier,contentScale=ContentScale.Crop)
 }

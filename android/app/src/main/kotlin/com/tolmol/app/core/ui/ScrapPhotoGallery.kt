@@ -2,6 +2,7 @@ package com.tolmol.app.core.ui
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.border
+import androidx.compose.foundation.background
 import com.tolmol.app.core.ui.theme.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -30,18 +31,18 @@ private val productPhotoPairs = listOf(
 
 @Composable
 fun ScrapPhotoGallery(imageKey: String?, category: String, modifier: Modifier = Modifier,
-                      fullBleed: Boolean = false, watched: Boolean = false,
+                      photoUrls: List<String> = emptyList(), fullBleed: Boolean = false, watched: Boolean = false,
                       watching: Boolean = false, onWatch: (() -> Unit)? = null) {
     val pair = productPhotoPairs.firstOrNull { imageKey in it }
     // Show the feed's selected photo first, including alternate demo thumbnails.
-    val photos = if (pair == null) listOf(imageKey) else listOf(imageKey) + pair.filter { it != imageKey }
-    androidx.compose.runtime.key(imageKey) {
+    val photos = if(photoUrls.isNotEmpty()) photoUrls else if (pair == null) listOf(imageKey) else listOf(imageKey) + pair.filter { it != imageKey }
+    androidx.compose.runtime.key(imageKey,photoUrls) {
         val pager = rememberPagerState(pageCount = { photos.size })
         Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Box {
             HorizontalPager(pager, Modifier.fillMaxWidth().aspectRatio(if(fullBleed) 1.12f else 1.3f)
                 .clip(GameShapes.large).border(GameDimens.Border,GameColors.Navy,GameShapes.large)) { page ->
-                ScrapImage(photos[page], category, Modifier.fillMaxSize())
+                ScrapImage(imageKey.takeIf { photoUrls.isNotEmpty() } ?: photos[page], category, Modifier.fillMaxSize(),photos[page].takeIf { photoUrls.isNotEmpty() })
             }
             if(fullBleed) {
                 Surface(Modifier.align(Alignment.BottomStart).padding(16.dp),shape=RoundedCornerShape(20.dp),
@@ -56,6 +57,11 @@ fun ScrapPhotoGallery(imageKey: String?, category: String, modifier: Modifier = 
                     }
                 }
             }
+            }
+            if(photoUrls.size>1) Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.Center) {
+                repeat(photoUrls.size) { index ->
+                    Box(Modifier.padding(4.dp).size(8.dp).background(if(index==pager.currentPage) GameColors.Blue else GameColors.SteelLight,androidx.compose.foundation.shape.CircleShape))
+                }
             }
             if (photos.size > 1 && !fullBleed) {
                 Text("Photo ${pager.currentPage + 1} of ${photos.size} · Swipe for more",

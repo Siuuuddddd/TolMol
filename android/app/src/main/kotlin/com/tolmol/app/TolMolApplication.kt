@@ -8,9 +8,14 @@ import org.koin.core.context.startKoin
 class TolMolApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        startKoin {
+        val koinApp=startKoin {
             androidContext(this@TolMolApplication)
             modules(appModule)
+        }
+        coil3.SingletonImageLoader.setSafe {
+            coil3.ImageLoader.Builder(this)
+                .components { add(coil3.network.okhttp.OkHttpNetworkFetcherFactory(callFactory={ koinApp.koin.get<okhttp3.OkHttpClient>() })) }
+                .build()
         }
     }
 }

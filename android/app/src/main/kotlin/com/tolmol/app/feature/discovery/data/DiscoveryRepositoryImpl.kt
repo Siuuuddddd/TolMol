@@ -14,7 +14,7 @@ class DiscoveryRepositoryImpl(private val api: DiscoveryApi) : DiscoveryReposito
         if (enabled) api.watch(id) else api.unwatch(id)
     }
 
-    private fun NearbyLotDto.toDomain() = NearbyLot(id, category, weight.content.toBigDecimal(), startingRate.content.toBigDecimal(), deadline, status, title ?: category + " scrap lot",description.orEmpty(),imageKey,distanceKm,sellerDisplayName,sellerMemberSince)
+    private fun NearbyLotDto.toDomain() = NearbyLot(id, category, weight.content.toBigDecimal(), startingRate.content.toBigDecimal(), deadline, status, title ?: category + " scrap lot",description.orEmpty(),imageKey,distanceKm,sellerDisplayName,sellerMemberSince,coverPhotoUrl,photoUrls)
 
     private suspend fun <T> request(action: suspend () -> T): T = try { action() }
     catch (error: CancellationException) { throw error }

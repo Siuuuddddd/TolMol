@@ -15,6 +15,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tolmol.app.core.common.LiveUpdate
@@ -48,6 +49,7 @@ fun DealsScreen(vm: DealsViewModel, user: String, seller: Boolean, open: (String
         ScreenFeedback(state) { vm.refresh() }
         if (items?.isEmpty() == true) EmptyState("No deals yet", "Awarded lots appear here.")
         for (item in items.orEmpty()) {
+            ScrapImage(item.imageKey,item.category,Modifier.fillMaxWidth().height(160.dp),item.coverPhotoUrl)
             RowCard(item.state.name.label(), "Lot ${item.listing.take(8)} · ₹${item.rate.toPlainString()}/kg") { open(item.listing) }
         }
     }
@@ -65,6 +67,7 @@ fun DealScreen(vm: DealViewModel, id: String, user: String) {
     val deal = state.value
     LaunchedEffect(deal?.revision) { input = "" }
     Screen("Pickup and settlement") {
+        if(deal!=null) ScrapPhotoGallery(deal.imageKey,deal.category,Modifier.fillMaxWidth(),photoUrls=deal.photoUrls)
         ScreenFeedback(state) { vm.refresh(id) }
         if (deal != null) {
             BrickCard(Modifier.fillMaxWidth()) {
@@ -107,3 +110,4 @@ fun DealScreen(vm: DealViewModel, id: String, user: String) {
         dismissButton = { TextButton({ confirmCancel = false }) { Text("Keep negotiating") } },
     )
 }
+

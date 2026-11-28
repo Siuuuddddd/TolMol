@@ -125,7 +125,7 @@ internal fun LotCard(lot: NearbyLot,now: Instant,watched: Boolean,pending: Boole
     BrickCard(modifier,onClick=open,contentPadding=PaddingValues(start=8.dp,end=12.dp,top=18.dp,bottom=12.dp)) {
         Box(Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(16.dp)).border(GameDimens.Border,GameColors.Navy,RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant)) {
-            ScrapImage(lot.imageKey,ScrapCategory.of(lot.category).name,Modifier.matchParentSize())
+            ScrapImage(lot.imageKey,ScrapCategory.of(lot.category).name,Modifier.matchParentSize(),lot.coverPhotoUrl)
             if(endingSoon(lot,now)) BrickTag("Ending soon",Modifier.align(Alignment.BottomStart).padding(8.dp))
             IconButton(watch,Modifier.align(Alignment.TopEnd).padding(6.dp).size(44.dp)
                 .background(GameColors.Paper,CircleShape).border(GameDimens.Border,GameColors.Navy,CircleShape).semantics {

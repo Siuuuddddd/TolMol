@@ -154,7 +154,7 @@ private fun ListingRowCard(lot: Listing, offers: List<Offer>?, now: Instant, ope
     val seconds = Duration.between(now, Instant.parse(lot.deadline)).seconds
     BrickCard(Modifier.fillMaxWidth(), onClick = open) {
         Row(horizontalArrangement = Arrangement.spacedBy(GameDimens.Gap)) {
-            ScrapImage(lot.imageKey, lot.category, Modifier.size(88.dp))
+            ScrapImage(lot.imageKey, lot.category, Modifier.size(88.dp), lot.coverPhotoUrl)
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(GameDimens.SmallGap)) {
                 Text(lot.title ?: lot.category, style = MaterialTheme.typography.titleMedium)
                 Text("Rs "+lot.startingRate.toPlainString()+"/kg")

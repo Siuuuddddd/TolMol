@@ -99,7 +99,7 @@ fun BiddingScreen(vm: BiddingViewModel, id: String, category: String, weight: St
         }
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
             if(detail.loading) SkeletonBrick(Modifier.fillMaxWidth())
-            ScrapPhotoGallery(lot?.imageKey,lot?.category ?: category,Modifier.fillMaxWidth(),fullBleed=true,
+            ScrapPhotoGallery(lot?.imageKey,lot?.category ?: category,Modifier.fillMaxWidth(),photoUrls=lot?.photoUrls.orEmpty(),fullBleed=true,
                 watched=detail.watched,watching=detail.watching,onWatch=if(lot!=null) ({details.watch(id)}) else null)
             Column(Modifier.padding(horizontal=16.dp,vertical=16.dp),verticalArrangement=Arrangement.spacedBy(18.dp)) {
                 if(detail.error!=null) {

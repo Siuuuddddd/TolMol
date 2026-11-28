@@ -5,7 +5,7 @@ import com.tolmol.app.core.common.LiveUpdate
 
 data class NearbyLot(val id: String, val category: String, val weight: BigDecimal, val startingRate: BigDecimal, val deadline: String, val status: String,
     val title: String = category + " scrap lot",val description: String = "",val imageKey: String? = null,
-    val distanceKm: Double? = null,val sellerDisplayName: String = "TolMol member",val sellerMemberSince: String? = null)
+    val distanceKm: Double? = null,val sellerDisplayName: String = "TolMol member",val sellerMemberSince: String? = null,val coverPhotoUrl: String? = null,val photoUrls: List<String> = emptyList())
 
 sealed class DiscoveryError(message: String) : RuntimeException(message) {
     class RequestFailed(message: String) : DiscoveryError(message)

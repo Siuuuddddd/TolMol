@@ -6,7 +6,7 @@ import com.tolmol.app.core.common.LiveUpdate
 enum class DealState { PENDING_PICKUP, WEIGHT_DISPUTE, COMPLETED, CANCELLED_RELISTED }
 data class Deal(val listing: String, val state: DealState, val buyer: String, val seller: String, val rate: BigDecimal,
     val estimatedWeight: BigDecimal, val actualWeight: BigDecimal?, val amount: BigDecimal?, val proposedBy: String?,
-    val revision: Long, val relisted: String?, val pickupLatitude: Double, val pickupLongitude: Double)
+    val revision: Long, val relisted: String?, val pickupLatitude: Double, val pickupLongitude: Double,val coverPhotoUrl: String? = null,val photoUrls: List<String> = emptyList(),val imageKey: String? = null,val category: String = "OTHER")
 
 sealed class DealError(message: String) : RuntimeException(message) {
     class RequestFailed(message: String) : DealError(message)
