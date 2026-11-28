@@ -22,11 +22,31 @@ import com.tolmol.app.feature.listing.domain.*
 import java.math.BigDecimal
 import java.time.Instant
 
-class ListingViewModel(private val listings: ListingUseCase) : ScreenViewModel<List<Listing>>() {
-    fun refresh() = load { listings.mine() }
-    fun more() = load {
-        val current = state.value.value.orEmpty()
-        current + listings.mine(current.lastOrNull()?.id)
+data class SellingData(
+    val listings: List<Listing>,
+    val orders: Int,
+    val offers: Map<String, List<Offer>>,
+)
+
+class ListingViewModel(
+    private val listings: ListingUseCase,
+    private val deals: com.tolmol.app.feature.deal.domain.DealUseCase,
+) : ScreenViewModel<SellingData>() {
+    fun refresh() = load {
+        val lots = mutableListOf<Listing>()
+        var after: String? = null
+        do {
+            val page = listings.mine(after)
+            lots.addAll(page)
+            val next = page.lastOrNull()?.id
+            val more = page.size >= 25 && next != after
+            after = next
+        } while (more)
+        val ids = lots.map { it.id }.toSet()
+        val orders = deals.mine().count { it.listing in ids }
+        val offers = lots.filter { it.status == "OPEN" && Instant.parse(it.deadline).isAfter(Instant.now()) }
+            .associate { it.id to listings.offers(it.id) }
+        SellingData(lots.distinctBy { it.id }, orders, offers)
     }
 }
 
@@ -45,21 +65,6 @@ class OffersViewModel(private val listings: ListingUseCase) : ScreenViewModel<Li
         listings.accept(id, bid)
         awarded = true
         listings.offers(id)
-    }
-}
-
-@Composable
-fun MyListingsScreen(vm: ListingViewModel, publish: () -> Unit, open: (Listing) -> Unit) {
-    val state by vm.state.collectAsStateWithLifecycle()
-    LaunchedEffect(vm) { vm.refresh() }
-    Screen("My listings") {
-        Button(publish) { Text("Publish a listing") }
-        ScreenFeedback(state) { vm.refresh() }
-        if (state.value?.isEmpty() == true) EmptyState("No listings yet", "Your published scrap lots appear here.")
-        for (listing in state.value.orEmpty()) {
-            RowCard(listing.title ?: listing.category, "${listing.weight.toPlainString()} kg · ${listing.status.label()}") { open(listing) }
-        }
-        if (state.value.orEmpty().size >= 25) TextButton({ vm.more() }, enabled = !state.loading) { Text("Load more") }
     }
 }
 

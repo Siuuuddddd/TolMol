@@ -135,7 +135,7 @@ private fun MarketplaceNavigation(account: Account, role: Role, changeRole: (() 
                         when (route.tab) {
                             MarketplaceTab.DISCOVER -> if(role==Role.BUYER) DiscoveryScreen(koinViewModel(), location) { lot ->
                                 stack.add(AuctionRoute(lot.id, lot.category, lot.weight.toPlainString(), lot.startingRate.toPlainString(), lot.deadline))
-                            } else MyListingsScreen(koinViewModel(), {stack.add(PublishRoute)}) {
+                            } else MyListingsScreen(koinViewModel(), {stack.add(PublishRoute)}, {navigate(MarketplaceTab.DEALS)}) {
                                 stack.add(OffersRoute(it.id,it.category,it.status,it.deadline))
                             }
                             MarketplaceTab.SEARCH, MarketplaceTab.WATCHLIST -> {
@@ -152,7 +152,7 @@ private fun MarketplaceNavigation(account: Account, role: Role, changeRole: (() 
                             MarketplaceTab.ACCOUNT -> MarketplaceAccountScreen(account,role,navigate,logout,
                                 publish={stack.add(PublishRoute)},changeRole=changeRole)
                             MarketplaceTab.BIDS -> MyBidsScreen(koinViewModel()) { stack.add(DealRoute(it)) }
-                            MarketplaceTab.LISTINGS -> MyListingsScreen(koinViewModel(), { stack.add(PublishRoute) }) {
+                            MarketplaceTab.LISTINGS -> MyListingsScreen(koinViewModel(), { stack.add(PublishRoute) }, {navigate(MarketplaceTab.DEALS)}) {
                                 stack.add(OffersRoute(it.id, it.category, it.status, it.deadline))
                             }
                             MarketplaceTab.CHAT -> ConversationsScreen(koinViewModel(), account.id, null) { stack.add(ChatRoute(it.id)) }
