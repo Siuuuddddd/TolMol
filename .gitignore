@@ -15,3 +15,6 @@ local.properties
 /BACKEND-HANDOFF.md
 /design-qa.md
 /setup-workspace.ps1
+
+/data/photos/
+/backend/data/photos/

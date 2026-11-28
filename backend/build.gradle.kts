@@ -9,6 +9,7 @@ version = "0.1.0"
 repositories { mavenCentral() }
 kotlin { jvmToolchain(21) }
 dependencies {
+    implementation("com.twelvemonkeys.imageio:imageio-webp:3.12.0")
     implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("org.springframework.kafka:spring-kafka")
     testImplementation("org.testcontainers:kafka")

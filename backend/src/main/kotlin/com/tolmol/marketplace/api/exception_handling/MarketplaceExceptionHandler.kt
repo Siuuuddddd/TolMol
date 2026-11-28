@@ -6,6 +6,8 @@ import com.tolmol.platform.domain.exception.BusinessException
 
 @RestControllerAdvice(basePackages = ["com.tolmol.marketplace.api.controllers"])
 class MarketplaceExceptionHandler {
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException::class)
+    fun tooLarge() = ResponseEntity.status(413).body(mapOf("error" to "Photos must be at most 5 MB each"))
     @ExceptionHandler(BusinessException::class)
     fun business(e: BusinessException) = ResponseEntity.status(e.status).body(mapOf("error" to e.message))
     @ExceptionHandler(IllegalArgumentException::class)

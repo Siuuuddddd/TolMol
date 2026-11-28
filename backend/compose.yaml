@@ -24,6 +24,9 @@ services:
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      TOLMOL_STORAGE_PHOTOS_DIR: /data/photos
+    volumes:
+      - listing-photos:/data/photos
     depends_on:
       postgres:
         condition: service_healthy
@@ -54,3 +57,4 @@ services:
 volumes:
   postgres:
   kafka:
+  listing-photos:

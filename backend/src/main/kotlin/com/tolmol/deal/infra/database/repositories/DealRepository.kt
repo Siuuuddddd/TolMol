@@ -36,6 +36,9 @@ class DealRepository(dbs: Databases) : DealStore {
         db.sql.sql("""insert into listings(id,seller,category,weight,starting_rate,latitude,longitude,deadline,title,description,image_key)
             select ?,seller,category,?,starting_rate,latitude,longitude,now()+interval '24 hours',title,description,image_key from listings where id=?""")
             .params(id,weight,deal.listing).update()
+        db.sql.sql("""insert into listing_photo(id,listing,position,content_type,size,storage_key,is_cover,request_key)
+            select gen_random_uuid(),?,position,content_type,size,storage_key,is_cover,request_key from listing_photo where listing=?""")
+            .params(id,deal.listing).update()
         return id
     }
 }
